@@ -32,10 +32,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import java.util.List;
 
@@ -71,6 +75,7 @@ public class AutoTest extends LinearOpMode {
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
+    private Limelight3A limelight;                   // Limelight vision sensor for localization
 
 
     // Other variables
@@ -110,6 +115,33 @@ public class AutoTest extends LinearOpMode {
         // Put your shooting logic/functions here
     }
 
+    /**
+     * Update robot localization using Limelight vision data
+     */
+    public void updateLimelightLocalization() {
+        LLResult result = limelight.getLatestResult();
+        if (result != null && result.isValid()) {
+            // Get pose from Limelight MegaTag2 localization
+            Pose3D botPose = result.getBotpose_MT2();
+            if (botPose != null) {
+                // Convert Limelight 3D pose to Pedro Pathing 2D pose
+                // Note: Limelight coordinates may need transformation based on field setup
+                double x = botPose.getPosition().x;
+                double y = botPose.getPosition().y;
+                double heading = Math.toRadians(botPose.getOrientation().getYaw());
+
+                Pose limelightPose = new Pose(x, y, heading);
+
+                // Update Pedro Pathing follower with Limelight pose
+                follower.setPose(limelightPose);
+                currentPose = limelightPose;
+
+                log("Limelight Pose", String.format("X: %.2f, Y: %.2f, H: %.2f°",
+                    x, y, Math.toDegrees(heading)));
+            }
+        }
+    }
+
 
     @Override
     public void runOpMode() {
@@ -122,6 +154,7 @@ public class AutoTest extends LinearOpMode {
 
         boolean targetFound = false;    // Set to true when an AprilTag target is detected
         initAprilTag();
+        initLimelight();
 
         if (USE_WEBCAM) {
             setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
@@ -144,6 +177,10 @@ public class AutoTest extends LinearOpMode {
             // Update Pedro Pathing and Panels every iteration
             follower.update();
             panelsTelemetry.update();
+
+            // Update localization with Limelight data
+            updateLimelightLocalization();
+
             currentPose = follower.getPose(); // Update the current pose
             targetFound = false;
             desiredTag = null;
@@ -350,6 +387,16 @@ public class AutoTest extends LinearOpMode {
                     .build();
         }
     }
+
+    /**
+     * Initialize the Limelight 3A vision sensor.
+     */
+    private void initLimelight() {
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(0);
+        limelight.start();
+    }
+
     /*
      Manually set the camera gain and exposure.
      This can only be called AFTER calling initAprilTag(), and only works for Webcams;
