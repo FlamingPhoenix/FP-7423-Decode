@@ -17,6 +17,10 @@ public class FieldCentricDrive {
     boolean useIMU = true;
     double heading;
     double multiplier = 0.8;
+    double lastHeading = 0;
+    double filteredHeading = 0;
+    double headingFilterAlpha = 0.9; // Smoothing factor (0.8-0.95 works well)
+    double joystickDeadzone = 0.05; // Deadzone to prevent jitter
     /**
      * Initialize motors
      * @param hardwareMap hardwareMap from opmode
@@ -90,12 +94,26 @@ public class FieldCentricDrive {
      * @param gamepad1 gamepad 1
      */
     public void drive(Gamepad gamepad1, double multiplier){
-        double x = -gamepad1.left_stick_x*1.1;
-        double y = gamepad1.left_stick_y;
-        double rx = -0.65*gamepad1.right_stick_x;
+        // Apply deadzone to joystick inputs
+        double x = applyDeadzone(-gamepad1.left_stick_x*1.1);
+        double y = applyDeadzone(gamepad1.left_stick_y);
+        double rx = applyDeadzone(-0.65*gamepad1.right_stick_x);
         double botHeading;
         if(useIMU) {
-            botHeading = -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);//might be degrees
+            double rawHeading = -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+            // Check for heading jumps (IMU reset/drift)
+            double headingDiff = Math.abs(rawHeading - lastHeading);
+            if (headingDiff > Math.PI) {
+                // Large jump detected - likely IMU reset, use raw heading
+                filteredHeading = rawHeading;
+            } else {
+                // Apply low-pass filter to smooth heading
+                filteredHeading = headingFilterAlpha * filteredHeading + (1 - headingFilterAlpha) * rawHeading;
+            }
+
+            lastHeading = rawHeading;
+            botHeading = filteredHeading;
         }
         else{
             botHeading = heading;
@@ -158,5 +176,17 @@ public class FieldCentricDrive {
     }
     public void setMultiplier(double mult){
         this.multiplier = mult;
+    }
+
+    /**
+     * Apply deadzone to joystick input to prevent jitter
+     * @param input raw joystick input
+     * @return filtered input with deadzone applied
+     */
+    private double applyDeadzone(double input) {
+        if (Math.abs(input) < joystickDeadzone) {
+            return 0.0;
+        }
+        return input;
     }
 }

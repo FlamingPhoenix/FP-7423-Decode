@@ -20,6 +20,7 @@ public class TeleOpMain extends OpMode{
     DcMotor intake;
 
     Servo front, back, middle, linkage;
+    CRServo wheel;
     boolean inShoot = false;
     int shootSequenceState = 0;
     ElapsedTime shootSequenceTimer = new ElapsedTime();
@@ -34,6 +35,7 @@ public class TeleOpMain extends OpMode{
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
+        wheel = hardwareMap.crservo.get("wheel");
     }
     @Override
     public void loop() {
@@ -41,6 +43,12 @@ public class TeleOpMain extends OpMode{
             drive.resetIMU();
         }
         drive.drive(gamepad1, exp);
+
+        // Add telemetry for debugging drive issues
+        telemetry.addData("IMU Heading (deg)", Math.toDegrees(drive.getHeading()));
+        telemetry.addData("Left Stick X", gamepad1.left_stick_x);
+        telemetry.addData("Left Stick Y", gamepad1.left_stick_y);
+        telemetry.addData("Right Stick X", gamepad1.right_stick_x);
 
         // Individual ball shooting controls
         if(gamepad1.dpad_left && !inShoot) { // Shoot back ball only
@@ -75,12 +83,15 @@ public class TeleOpMain extends OpMode{
         }
 
         // Intake controls
-        if(gamepad2.left_trigger > 0.1) {
-            intake.setPower(gamepad2.left_trigger);
-        } else if(gamepad2.left_bumper) {
+        if(gamepad1.left_trigger > 0.1) {
+            intake.setPower(gamepad1.left_trigger);
+            wheel.setPower(1.0);
+        } else if(gamepad1.left_bumper) {
             intake.setPower(-1.0);
+            wheel.setPower(-1.0);
         } else {
             intake.setPower(0);
+            wheel.setPower(0);
         }
 
         if(inShoot){
