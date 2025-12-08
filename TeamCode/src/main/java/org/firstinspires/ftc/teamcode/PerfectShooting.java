@@ -7,6 +7,7 @@ public class PerfectShooting {
     * measure the height of the shooter from the ground in inches
     * measure height of GOAL from ground in inches
     * Add Limelight to measure distance to goal in inches using AprilTags
+    * tune motor PID (DcMotorEx) for more accurate RPM control
     * 
     
     */
@@ -30,6 +31,7 @@ public class PerfectShooting {
     public double getVelocity(double distance) {
         double distanceInMeters = distance / 39.37;
         double denom = cos2a * (distanceInMeters * tana - height);
+        assert denom > 0 : "outside of valid range for shooting";
         return Math.sqrt( 4.9 * Math.pow(distanceInMeters, 2) / denom);
     }
     /**
