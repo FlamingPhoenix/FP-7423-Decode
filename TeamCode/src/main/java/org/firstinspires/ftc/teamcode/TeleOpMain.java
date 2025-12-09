@@ -8,9 +8,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 
@@ -34,7 +38,7 @@ public class TeleOpMain extends OpMode{
     int shootMode = 0; // 0 = all balls, 1 = back only, 2 = middle only, 3 = front only
     int exp = 1;
     boolean autoAlignActive = false;
-    LimeLight3A limelight;
+    Limelight3A limelight;
     AutoAlign autoAligner;
     LimeLightLocator locator;
     PerfectShooting shooterCalculator;
@@ -50,9 +54,10 @@ public class TeleOpMain extends OpMode{
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
         wheel = hardwareMap.crservo.get("wheel");
+        wheel = hardwareMap.crservo.get("wheel");
         //limelight = hardwareMap.get(LimeLight3A.class, "limelight");
         // limelight.setPollRateHz(100);
-        // limelight.start(); 
+        // limelight.start();
         // limelight.pipelineSwitch(0);
         autoAligner = new AutoAlign(drive);
         shooterCalculator = new PerfectShooting(10); // height of shooter from ground in inches
@@ -62,13 +67,15 @@ public class TeleOpMain extends OpMode{
         if(gamepad1.x){
             drive.resetIMU();
         }
+        telemetry.addData("heading",drive.getHeading());
+        drive.drive(gamepad1, exp);
         //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
         // LLResult result = limelight.getLatestResult();
         // if (result != null && result.isValid()) {
         //     tx = result.getTx(); // How far left or right the target is (degrees)
         //     ty = result.getTy(); // How far up or down the target is (degrees)
         //     ta = result.getTa(); // How big the target looks (0%-100% of the image)
-            
+
         //     telemetry.addData("Target X", tx);
         //     telemetry.addData("Target Y", ty);
         //     telemetry.addData("Target Area", ta);
@@ -77,7 +84,7 @@ public class TeleOpMain extends OpMode{
         //     autoAlignActive = false;
         // }
 
-        
+
 
         distanceToTarget = locator.getDistanceToTargetStandalone(ty,0,10); // MUST SET ANGLE AND ELEVATION
         telemetry.addData("Distance to Target (inches)", distanceToTarget);
@@ -128,11 +135,11 @@ public class TeleOpMain extends OpMode{
 
         // Intake controls
         if(gamepad1.left_trigger > 0.1) {
-            intake.setPower(gamepad1.left_trigger);
-            wheel.setPower(1.0);
+            intake.setPower(gamepad1.left_trigger*0.7);
         } else if(gamepad1.left_bumper) {
-            intake.setPower(-1.0);
-            wheel.setPower(-1.0);
+            intake.setPower(-0.9);
+            wheel.setPower(-1);
+
         } else {
             intake.setPower(0);
             wheel.setPower(0);
@@ -152,7 +159,7 @@ public class TeleOpMain extends OpMode{
 
                 case 2: // Wait then reset back servo and move to middle
                     if(shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
-                        back.setPosition(0.113); // Reset back servo
+                        back.setPosition(0); // Reset back servo
                         if(shootMode == 1) { // Back ball only
                             shooter.setPower(0);
                             inShoot = false;
@@ -171,7 +178,7 @@ public class TeleOpMain extends OpMode{
                         ((DcMotorEx) shooter).setVelocity(shooterVelocity);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
-                        middle.setPosition(1.0); // Push middle ball up
+                        middle.setPosition(0.6); // Push middle ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 4;
                     }
@@ -179,7 +186,7 @@ public class TeleOpMain extends OpMode{
 
                 case 4: // Wait then reset middle servo and move to front
                     if(shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
-                        middle.setPosition(0.5322); // Reset middle servo
+                        middle.setPosition(0); // Reset middle servo
                         if(shootMode == 2) { // Middle ball only
                             shooter.setPower(0);
                             inShoot = false;
@@ -198,7 +205,7 @@ public class TeleOpMain extends OpMode{
                         ((DcMotorEx) shooter).setVelocity(shooterVelocity);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
-                        front.setPosition(1.0); // Push front ball up
+                        front.setPosition(0.6); // Push front ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 6;
                     }
@@ -206,7 +213,7 @@ public class TeleOpMain extends OpMode{
 
                 case 6: // End sequence
                     if(shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
-                        front.setPosition(0.5322); // Reset front servo
+                        front.setPosition(0); // Reset front servo
                         shooter.setPower(0);
                         inShoot = false;
                         shootSequenceState = 0;
@@ -214,6 +221,9 @@ public class TeleOpMain extends OpMode{
                     break;
             }
         }
+
+        telemetry.addData("shooter velocity", ((DcMotorEx ) shooter).getVelocity());
+        telemetry.update();
 
 
         //drive control

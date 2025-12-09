@@ -1,18 +1,19 @@
 package org.firstinspires.ftc.teamcode;
-import com.qualcomm.hardware.limelightvision.LimeLight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class LimeLightLocator {
-    LimeLight3A limelight = new LimeLight3A();
+    Limelight3A limelight;
     double angle, elevation;
     double goalHeight = 29.5; // height of goal in inches
-    public LimeLightLocator(hardwareMap hwmap, double angle, double elevation){ 
+    public LimeLightLocator(HardwareMap hwmap, double angle, double elevation){
         this.angle = angle;
         this.elevation = elevation;
 
-        limelight = hwmap.get(LimeLight3A.class, "limelight");
+        limelight = hwmap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); 
         limelight.pipelineSwitch(0);

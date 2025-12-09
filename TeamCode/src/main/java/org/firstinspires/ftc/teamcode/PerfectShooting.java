@@ -17,7 +17,6 @@ public class PerfectShooting {
     final double tana = Math.tan(angle);
     /**
      * Constructor
-     * @param angle in radians
      * @param height in inches
      */
     public PerfectShooting(double height) {
