@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,6 +16,12 @@ import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 
 @TeleOp
 public class TeleOpMain extends OpMode{
+    /*
+    TODO 12-9-25
+    FIND IF CONFLICT BETWEEN setVelocity and setPower
+    IMPLEMENT LIMELIGHT
+    ADD BUTTON FOR AUTOALIGN
+     */
     FieldCentricDrive drive;
     DcMotor shooter;
     DcMotor intake;
@@ -26,6 +33,13 @@ public class TeleOpMain extends OpMode{
     ElapsedTime shootSequenceTimer = new ElapsedTime();
     int shootMode = 0; // 0 = all balls, 1 = back only, 2 = middle only, 3 = front only
     int exp = 1;
+    boolean autoAlignActive = false;
+    LimeLight3A limelight;
+    AutoAlign autoAligner;
+    LimeLightLocator locator;
+    PerfectShooting shooterCalculator;
+    double ta, tx, ty,distanceToTarget;
+    double shooterVelocity = -1200; //default shooter velocity in ticks per second
     @Override
     public void init() {
         drive = new FieldCentricDrive(hardwareMap);
@@ -36,13 +50,43 @@ public class TeleOpMain extends OpMode{
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
         wheel = hardwareMap.crservo.get("wheel");
+        //limelight = hardwareMap.get(LimeLight3A.class, "limelight");
+        // limelight.setPollRateHz(100);
+        // limelight.start(); 
+        // limelight.pipelineSwitch(0);
+        autoAligner = new AutoAlign(drive);
+        shooterCalculator = new PerfectShooting(10); // height of shooter from ground in inches
     }
     @Override
     public void loop() {
         if(gamepad1.x){
             drive.resetIMU();
         }
-        drive.drive(gamepad1, exp);
+        //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
+        // LLResult result = limelight.getLatestResult();
+        // if (result != null && result.isValid()) {
+        //     tx = result.getTx(); // How far left or right the target is (degrees)
+        //     ty = result.getTy(); // How far up or down the target is (degrees)
+        //     ta = result.getTa(); // How big the target looks (0%-100% of the image)
+            
+        //     telemetry.addData("Target X", tx);
+        //     telemetry.addData("Target Y", ty);
+        //     telemetry.addData("Target Area", ta);
+        // } else {
+        //     telemetry.addData("Limelight", "No Targets");
+        //     autoAlignActive = false;
+        // }
+
+        
+
+        distanceToTarget = locator.getDistanceToTargetStandalone(ty,0,10); // MUST SET ANGLE AND ELEVATION
+        telemetry.addData("Distance to Target (inches)", distanceToTarget);
+        shooterVelocity = shooterCalculator.getVelocityInRPM(distanceToTarget, 96); // 96mm wheel diameter
+        telemetry.addData("Shooter Velocity (RPM)", shooterVelocity);
+
+
+
+
 
         // Add telemetry for debugging drive issues
         telemetry.addData("IMU Heading (deg)", Math.toDegrees(drive.getHeading()));
@@ -76,7 +120,7 @@ public class TeleOpMain extends OpMode{
         // Shooter controls (only when not in sequence)
         if(!inShoot) {
             if(gamepad1.right_bumper) {
-                shooter.setPower(-0.65);
+                ((DcMotorEx) shooter).setVelocity(shooterVelocity);
             } else {
                 shooter.setPower(0);
             }
@@ -98,7 +142,7 @@ public class TeleOpMain extends OpMode{
             switch(shootSequenceState) {
                 case 1: // Move linkage to back position and lift back ball
                     linkage.setPosition(0.3567);  // Move shooter to back position
-                    shooter.setPower(-0.65);
+                    ((DcMotorEx) shooter).setVelocity(shooterVelocity);
                     if(shootSequenceTimer.milliseconds() > 700) { // Wait for linkage to move
                         back.setPosition(0.6); // Push back ball up
                         shootSequenceTimer.reset();
@@ -124,7 +168,7 @@ public class TeleOpMain extends OpMode{
                 case 3: // Move linkage to middle position and lift middle ball
                     if(shootMode == 2) { // Middle ball only - need to position linkage first
                         linkage.setPosition(0.25); // Move shooter to middle position
-                        shooter.setPower(-0.65);
+                        ((DcMotorEx) shooter).setVelocity(shooterVelocity);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                         middle.setPosition(1.0); // Push middle ball up
@@ -151,7 +195,7 @@ public class TeleOpMain extends OpMode{
                 case 5: // Move linkage to front position and lift front ball
                     if(shootMode == 3) { // Front ball only - need to position linkage first
                         linkage.setPosition(0.0); // Move shooter to front position
-                        shooter.setPower(-0.65);
+                        ((DcMotorEx) shooter).setVelocity(shooterVelocity);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                         front.setPosition(1.0); // Push front ball up
@@ -169,6 +213,15 @@ public class TeleOpMain extends OpMode{
                     }
                     break;
             }
+        }
+
+
+        //drive control
+        if(!autoAlignActive){
+            drive.drive(gamepad1, exp);
+        }
+        else{
+            autoAligner.alignToTargetWithManualDrive(-gamepad1.left_stick_x*1.1, gamepad1.left_stick_y, tx); // 0 is placeholder for tx from limelight
         }
     }
 }
