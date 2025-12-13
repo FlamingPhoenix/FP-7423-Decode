@@ -39,7 +39,7 @@ public class PerfectShooting {
      * @param diameter in mm
      * @return
      */
-    public double veleocityToRPM(double velocity, double diameter){
+    public double velocityToRPM(double velocity, double diameter){
         double diameterInMeters = diameter / 1000;
         double circumference = Math.PI * diameterInMeters;
         double rps = velocity / circumference;
@@ -53,7 +53,7 @@ public class PerfectShooting {
      */
     double getVelocityInRPM(double distance, double diameter){
         double velocity = getVelocity(distance);
-        return veleocityToRPM(velocity, diameter);
+        return velocityToRPM(velocity, diameter);
     }
 
 }

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.utility;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.exp;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -132,7 +131,7 @@ public class FieldCentricDrive {
         fl.setPower((multiplier*Math.pow((flp),1)));
         bl.setPower((multiplier*Math.pow((blp),1)));
         fr.setPower((multiplier*Math.pow((frp), 1)));
-        br.setPower((multiplier*Math.pow((brp),1)));;
+        br.setPower((multiplier*Math.pow((brp),1)));
     }
     /**
      * Get robot heading in radians

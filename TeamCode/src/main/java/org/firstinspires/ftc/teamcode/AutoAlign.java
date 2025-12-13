@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import java.lang.reflect.Field;
-
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 
 public class AutoAlign{

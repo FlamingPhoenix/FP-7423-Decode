@@ -1,18 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import static java.lang.Math.abs;
 
+
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
@@ -55,10 +52,10 @@ public class TeleOpMain extends OpMode{
         linkage = hardwareMap.servo.get("linkage");
         wheel = hardwareMap.crservo.get("wheel");
         wheel = hardwareMap.crservo.get("wheel");
-        //limelight = hardwareMap.get(LimeLight3A.class, "limelight");
-        // limelight.setPollRateHz(100);
-        // limelight.start();
-        // limelight.pipelineSwitch(0);
+//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//         limelight.setPollRateHz(100);
+//         limelight.start();
+//         limelight.pipelineSwitch(0);
         autoAligner = new AutoAlign(drive);
         shooterCalculator = new PerfectShooting(10); // height of shooter from ground in inches
     }
@@ -68,28 +65,30 @@ public class TeleOpMain extends OpMode{
             drive.resetIMU();
         }
         telemetry.addData("heading",drive.getHeading());
-        drive.drive(gamepad1, exp);
+        // Check for auto-align activation
+        autoAlignActive = gamepad1.left_trigger>0.2;
+
         //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
-        // LLResult result = limelight.getLatestResult();
-        // if (result != null && result.isValid()) {
-        //     tx = result.getTx(); // How far left or right the target is (degrees)
-        //     ty = result.getTy(); // How far up or down the target is (degrees)
-        //     ta = result.getTa(); // How big the target looks (0%-100% of the image)
+//         LLResult result = limelight.getLatestResult();
+//         if (result != null && result.isValid()) {
+//             tx = result.getTx(); // How far left or right the target is (degrees)
+//             ty = result.getTy(); // How far up or down the target is (degrees)
+//             ta = result.getTa(); // How big the target looks (0%-100% of the image)
+//
+//             telemetry.addData("Target X", tx);
+//             telemetry.addData("Target Y", ty);
+//             telemetry.addData("Target Area", ta);
+//         } else {
+//             telemetry.addData("Limelight", "No Targets");
+//             autoAlignActive = false;
+//         }
 
-        //     telemetry.addData("Target X", tx);
-        //     telemetry.addData("Target Y", ty);
-        //     telemetry.addData("Target Area", ta);
-        // } else {
-        //     telemetry.addData("Limelight", "No Targets");
-        //     autoAlignActive = false;
-        // }
 
 
-
-        distanceToTarget = locator.getDistanceToTargetStandalone(ty,0,10); // MUST SET ANGLE AND ELEVATION
-        telemetry.addData("Distance to Target (inches)", distanceToTarget);
-        shooterVelocity = shooterCalculator.getVelocityInRPM(distanceToTarget, 96); // 96mm wheel diameter
-        telemetry.addData("Shooter Velocity (RPM)", shooterVelocity);
+//        distanceToTarget = locator.getDistanceToTargetStandalone(ty,0,10); // MUST SET ANGLE AND ELEVATION
+//        telemetry.addData("Distance to Target (inches)", distanceToTarget);
+//        shooterVelocity = -28 * shooterCalculator.getVelocityInRPM(distanceToTarget, 96); // 96mm wheel diameter * 28 ticks per revolution
+//        telemetry.addData("Shooter Velocity (RPM)", shooterVelocity);
 
 
 
