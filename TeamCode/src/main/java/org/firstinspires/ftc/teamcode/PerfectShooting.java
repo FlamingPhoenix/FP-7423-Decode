@@ -30,7 +30,9 @@ public class PerfectShooting {
     public double getVelocity(double distance) {
         double distanceInMeters = distance / 39.37;
         double denom = cos2a * (distanceInMeters * tana - height);
-        assert denom > 0 : "outside of valid range for shooting";
+        if(denom <= 0){
+            return -1;
+        }
         return Math.sqrt( 4.9 * Math.pow(distanceInMeters, 2) / denom);
     }
     /**
@@ -40,10 +42,16 @@ public class PerfectShooting {
      * @return
      */
     public double velocityToRPM(double velocity, double diameter){
-        double diameterInMeters = diameter / 1000;
-        double circumference = Math.PI * diameterInMeters;
-        double rps = velocity / circumference;
-        return rps * 60;
+        if(velocity>0){
+
+            double diameterInMeters = diameter / 1000;
+            double circumference = Math.PI * diameterInMeters;
+            double rps = velocity / circumference;
+            return rps;
+        }
+        else{
+            return -1;
+        }
     }
     /**
      * combined method to get RPM from distance and wheel diameter

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class LimeLightLocator {
     Limelight3A limelight;
     double angle, elevation;
-    double goalHeight = 29.5; // height of goal in inches
+    static double goalHeight = 29.5; // height of goal in inches
     public LimeLightLocator(HardwareMap hwmap, double angle, double elevation){
         this.angle = angle;
         this.elevation = elevation;
@@ -32,7 +32,7 @@ public class LimeLightLocator {
             return -1; // Indicate that no target is found
         }
     }
-    public double getDistanceToTargetStandalone(double ty, double angle, double elevation){
+    public static double getDistanceToTargetStandalone(double ty, double angle, double elevation){
             double angleToGoal = angle + ty;
             double angleInRadians = Math.toRadians(angleToGoal);
             double distance = (goalHeight - elevation) / Math.tan(angleInRadians);

@@ -14,21 +14,22 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class ManualShooterPIDTuner extends OpMode {
     private TelemetryManager panelstelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     private DcMotorEx shooterMotor;
-    public static double TARGET_SPEED = 1200; // tps
-    public static double KP = 0.1;
+    public static double TARGET_SPEED = -1200; // tps
+    public static double KP = 60;
     public static double KI = 0.0;
-    public static double KD = 0.0;
-    public static double KF = 0.0;
-    private PIDFCoefficients pidfCoefficients = new PIDFCoefficients(KP, KI, KD, KF);
+    public static double KD = 0.2;
+    public static double KF = 17.2;
     @Override
     public void init() {
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter");
         panelstelemetry.addData("Manual Shooter PID Tuner", "Initialized");
-        shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+        shooterMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(KP, KI, KD, KF));
     }
     @Override
     public void loop() {
-        shooterMotor.setVelocityPIDFCoefficients(KP, KI, KD, KF);
+        shooterMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(KP, KI, KD, KF));
         shooterMotor.setVelocity(TARGET_SPEED);
         double currentVelocity = shooterMotor.getVelocity();
         panelstelemetry.addData("Target Speed (tps)", TARGET_SPEED);
