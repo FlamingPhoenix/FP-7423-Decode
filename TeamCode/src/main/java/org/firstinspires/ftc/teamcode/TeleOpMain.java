@@ -146,7 +146,7 @@ public class TeleOpMain extends OpMode{
             intake.setPower(gamepad1.left_trigger*0.7);
         } else if(gamepad1.left_bumper) {
             intake.setPower(-0.7);
-            wheel.setPower(-1);
+            wheel.setPower(1);
 
         } else {
             intake.setPower(0);

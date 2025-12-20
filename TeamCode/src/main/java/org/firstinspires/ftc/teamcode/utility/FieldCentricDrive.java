@@ -30,8 +30,8 @@ public class FieldCentricDrive {
         bl = hardwareMap.dcMotor.get("bl");
         br = hardwareMap.dcMotor.get("br");
         //reverse motors
-        fr.setDirection(DcMotor.Direction.REVERSE);
-        br.setDirection(DcMotor.Direction.REVERSE);
+        fl.setDirection(DcMotor.Direction.REVERSE);
+        bl.setDirection(DcMotor.Direction.REVERSE);
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
         imu.initialize(parameters);
@@ -47,8 +47,8 @@ public class FieldCentricDrive {
         bl = hardwareMap.dcMotor.get("bl");
         br = hardwareMap.dcMotor.get("br");
         //reverse motors
-        fr.setDirection(DcMotor.Direction.REVERSE);
-        br.setDirection(DcMotor.Direction.REVERSE);
+        fl.setDirection(DcMotor.Direction.REVERSE);
+        bl.setDirection(DcMotor.Direction.REVERSE);
         this.useIMU = useIMU;
         if(useIMU) {
         imu = hardwareMap.get(IMU.class, "imu");
@@ -96,7 +96,7 @@ public class FieldCentricDrive {
         // Apply deadzone to joystick inputs
         double x = applyDeadzone(-gamepad1.left_stick_x*1.1);
         double y = applyDeadzone(gamepad1.left_stick_y);
-        double rx = applyDeadzone(0.65*gamepad1.right_stick_x);
+        double rx = applyDeadzone(-0.65*gamepad1.right_stick_x);
         double botHeading;
         if(useIMU) {
             double rawHeading = -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);

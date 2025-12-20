@@ -15,18 +15,12 @@ public class BlankAuto extends LinearOpMode {
         bl = hardwareMap.dcMotor.get("bl");
         br = hardwareMap.dcMotor.get("br");
         ElapsedTime timer = new ElapsedTime();
-        //reverse motors
         fr.setDirection(DcMotor.Direction.REVERSE);
         br.setDirection(DcMotor.Direction.REVERSE);
         waitForStart();
         timer.reset();
         while (opModeIsActive()) {
-            // Your autonomous code goes here
-
-            // For example, you can add telemetry data
-            telemetry.addData("Status", "Running Autonomous");
-            telemetry.update();
-            if(timer.milliseconds() < 1000) {
+            if(timer.milliseconds() < 2000) {
                 fl.setPower(0.5);
                 fr.setPower(0.5);
                 bl.setPower(0.5);
