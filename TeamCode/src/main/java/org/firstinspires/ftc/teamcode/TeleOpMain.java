@@ -47,7 +47,7 @@ public class TeleOpMain extends OpMode{
     LimeLightLocator locator;
     PerfectShooting shooterCalculator;
     double ta, tx, ty,distanceToTarget;
-    double shooterVelocity = -1200; //default shooter velocity in ticks per second
+    double shooterVelocity = -1700; //default shooter velocity in ticks per second
     @Override
     public void init() {
         drive = new FieldCentricDrive(hardwareMap);
