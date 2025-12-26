@@ -25,13 +25,13 @@ public class TeleOpMainLimeLight extends OpMode{
     ADD BUTTON FOR AUTOALIGN
      */
     //CONFIGURABLES
-    public static double velocityMultiplier = 1.0;
-    public static double velocityCompensation = 300; //tps
+    public static double velocityMultiplier = 2.17;
+    public static double velocityCompensation = 280; //tps
     public static double KP = 60;
     public static double KI = 0;
     public static double KD = 0.2;
     public static double KF = 17.2;
-    public static double alignkp = 0.1;
+    public static double alignkp = 0.05;
     //THE REST
 
     private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
@@ -54,6 +54,7 @@ public class TeleOpMainLimeLight extends OpMode{
     double ta, tx, ty,distanceToTarget;
     double shooterSpeed = -1200; //default shooter velocity in ticks per second
     boolean limeLightWorking = true;
+    double positionCompensation;
     @Override
     public void init() {
         drive = new FieldCentricDrive(hardwareMap);
@@ -75,7 +76,7 @@ public class TeleOpMainLimeLight extends OpMode{
             limeLightWorking = false;
         }
         autoAligner = new AutoAlign(drive,alignkp);
-        shooterCalculator = new PerfectShooting(10); // height of shooter from ground in inches
+        shooterCalculator = new PerfectShooting(29.5); // height of shooter from ground in inches
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -102,7 +103,9 @@ public class TeleOpMainLimeLight extends OpMode{
                 telemetry.addData("Target X", tx);
                 telemetry.addData("Target Y", ty);
                 telemetry.addData("Target Area", ta);
-                distanceToTarget = LimeLightLocator.getDistanceToTargetStandalone(ty,30,2.2); // MUST SET ANGLE AND ELEVATION
+
+                telemetry.addData("Current Compensation",positionCompensation);
+                distanceToTarget = LimeLightLocator.getDistanceToTargetStandalone(ty,30,2.2) + positionCompensation; // MUST SET ANGLE AND ELEVATION
                 telemetry.addData("Distance to Target (inches)", distanceToTarget);
                 double shooterVelocity = shooterCalculator.getVelocityInRPM(distanceToTarget, 96);
                 if(shooterVelocity<0){
@@ -115,7 +118,7 @@ public class TeleOpMainLimeLight extends OpMode{
                                     (
                                             -28 * shooterVelocity
                                     )
-                                    + velocityCompensation
+                                    - velocityCompensation
                             , maxTPS); // 96mm wheel diameter * 28 ticks per revolution
                 }
             } else {
@@ -140,21 +143,24 @@ public class TeleOpMainLimeLight extends OpMode{
         telemetry.addData("Right Stick X", gamepad1.right_stick_x);
 
         // Individual ball shooting controls
-        if(gamepad1.dpad_left && !inShoot) { // Shoot back ball only
+        if(gamepad1.dpad_left && !inShoot) { // Shoot front ball only
             inShoot = true;
             shootMode = 1;
             shootSequenceState = 1;
             shootSequenceTimer.reset();
+            positionCompensation = 5;
         } else if(gamepad1.dpad_up && !inShoot) { // Shoot middle ball only
             inShoot = true;
             shootMode = 2;
             shootSequenceState = 3;
             shootSequenceTimer.reset();
-        } else if(gamepad1.dpad_right && !inShoot) { // Shoot front ball only
+            positionCompensation = 10;
+        } else if(gamepad1.dpad_right && !inShoot) { // Shoot back ball only
             inShoot = true;
             shootMode = 3;
             shootSequenceState = 5;
             shootSequenceTimer.reset();
+            positionCompensation = 15;
         } else if(gamepad1.b && !inShoot) { // Shoot all balls (original sequence)
             inShoot = true;
             shootMode = 0;
@@ -176,7 +182,7 @@ public class TeleOpMainLimeLight extends OpMode{
             intake.setPower(gamepad1.left_trigger*0.7);
         } else if(gamepad1.left_bumper) {
             intake.setPower(-0.9);
-            wheel.setPower(-1);
+            wheel.setPower(1);
 
         } else {
             intake.setPower(0);
@@ -269,7 +275,7 @@ public class TeleOpMainLimeLight extends OpMode{
             drive.drive(gamepad1, exp);
         }
         else{
-            autoAligner.alignToTargetWithManualDrive(-gamepad1.left_stick_x*1.1, gamepad1.left_stick_y, tx); // 0 is placeholder for tx from limelight
+            autoAligner.alignToTargetWithManualDrive(tx,gamepad1.left_stick_y,-gamepad1.left_stick_x*1.1); // 0 is placeholder for tx from limelight
         }
     }
 }

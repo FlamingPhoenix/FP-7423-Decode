@@ -11,7 +11,7 @@ public class PerfectShooting {
     * 
     
     */
-    double angle  = Math.toRadians(36);
+    double angle  = Math.toRadians(54);
     double height;
     final double cos2a = Math.pow(Math.cos(angle), 2);
     final double tana = Math.tan(angle);

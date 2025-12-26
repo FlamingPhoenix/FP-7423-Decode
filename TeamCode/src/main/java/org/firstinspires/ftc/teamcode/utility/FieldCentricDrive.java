@@ -77,10 +77,10 @@ public class FieldCentricDrive {
 
 
         double denominator = Math.max(abs(gpy) + abs(gpx) + abs(rx), 1);
-        double flp = -(rotY + rotX + rx) / denominator;
-        double blp = -(rotY - rotX + rx) / denominator;
-        double frp = -(rotY - rotX - rx) / denominator;
-        double brp = -(rotY + rotX - rx) / denominator;
+        double flp = (rotY + rotX + rx) / denominator;
+        double blp = (rotY - rotX + rx) / denominator;
+        double frp = (rotY - rotX - rx) / denominator;
+        double brp = (rotY + rotX - rx) / denominator;
 
         fl.setPower(multiplier*flp);
         bl.setPower(multiplier*blp);
@@ -122,10 +122,10 @@ public class FieldCentricDrive {
 
 
         double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
-        double flp = -(rotY + rotX + rx) / denominator;
-        double blp = -(rotY - rotX + rx) / denominator;
-        double frp = -(rotY - rotX - rx) / denominator;
-        double brp = -(rotY + rotX - rx) / denominator;
+        double flp = (rotY + rotX + rx) / denominator;
+        double blp = (rotY - rotX + rx) / denominator;
+        double frp = (rotY - rotX - rx) / denominator;
+        double brp = (rotY + rotX - rx) / denominator;
 
 
         fl.setPower((multiplier*Math.pow((flp),1)));
