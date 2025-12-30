@@ -13,6 +13,10 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
+import org.firstinspires.ftc.teamcode.shooter.LimeLightLocator;
+import org.firstinspires.ftc.teamcode.shooter.PerfectShooting;
+import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 
 @TeleOp
@@ -25,13 +29,16 @@ public class TeleOpMainLimeLight extends OpMode{
     ADD BUTTON FOR AUTOALIGN
      */
     //CONFIGURABLES
-    public static double velocityMultiplier = 2.17;
+    public static double velocityMultiplier = 2.14;
     public static double velocityCompensation = 280; //tps
     public static double KP = 60;
     public static double KI = 0;
     public static double KD = 0.2;
     public static double KF = 17.2;
-    public static double alignkp = 0.05;
+    public static double alignkp = -0.04;
+    public static double ball1mult = 0.98;
+    public static double ball2mult = 1.05;
+    public static double ball3mult = 1.05;
     //THE REST
 
     private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
@@ -50,11 +57,12 @@ public class TeleOpMainLimeLight extends OpMode{
     Limelight3A limelight;
     AutoAlign autoAligner;
     LimeLightLocator locator;
-    PerfectShooting shooterCalculator;
+    ShootCalculator shooterCalculator;
     double ta, tx, ty,distanceToTarget;
     double shooterSpeed = -1200; //default shooter velocity in ticks per second
     boolean limeLightWorking = true;
     double positionCompensation;
+    double multiplierCompensation = 1.0;
     @Override
     public void init() {
         drive = new FieldCentricDrive(hardwareMap);
@@ -72,11 +80,11 @@ public class TeleOpMainLimeLight extends OpMode{
             limelight.start();
             limelight.pipelineSwitch(0);
         }
-        catch (IllegalArgumentException e){
+        catch (IllegalArgumentException e){//change to llworking = false on default and set to true when llworking
             limeLightWorking = false;
         }
         autoAligner = new AutoAlign(drive,alignkp);
-        shooterCalculator = new PerfectShooting(29.5); // height of shooter from ground in inches
+        shooterCalculator = new ShootCalculator(); // height of shooter from ground in inches
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -91,41 +99,18 @@ public class TeleOpMainLimeLight extends OpMode{
         telemetry.addData("heading",drive.getHeading());
         // Check for auto-align activation
         if(limeLightWorking) {
-            autoAlignActive = gamepad1.left_trigger > 0.2;
+            autoAlignActive = gamepad1.right_trigger > 0.2;
 
             //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
             LLResult result = limelight.getLatestResult();
+            shooterSpeed = shooterCalculator.calculateRPMWForTELE(result, positionCompensation) * multiplierCompensation;
             if (result != null && result.isValid()) {
-                tx = result.getTx(); // How far left or right the target is (degrees)
-                ty = result.getTy(); // How far up or down the target is (degrees)
-                ta = result.getTa(); // How big the target looks (0%-100% of the image)
-
-                telemetry.addData("Target X", tx);
-                telemetry.addData("Target Y", ty);
-                telemetry.addData("Target Area", ta);
-
-                telemetry.addData("Current Compensation",positionCompensation);
-                distanceToTarget = LimeLightLocator.getDistanceToTargetStandalone(ty,30,2.2) + positionCompensation; // MUST SET ANGLE AND ELEVATION
-                telemetry.addData("Distance to Target (inches)", distanceToTarget);
-                double shooterVelocity = shooterCalculator.getVelocityInRPM(distanceToTarget, 96);
-                if(shooterVelocity<0){
-                    shooterSpeed = -1200;
-                    autoAlignActive = false;
-                    telemetry.addData("Limelight","Target out of range");
-                }else {
-                    shooterSpeed = Math.min(
-                            velocityMultiplier *
-                                    (
-                                            -28 * shooterVelocity
-                                    )
-                                    - velocityCompensation
-                            , maxTPS); // 96mm wheel diameter * 28 ticks per revolution
-                }
-            } else {
-                telemetry.addData("Limelight", "No Targets");
-                autoAlignActive = false;
-
-                shooterSpeed =-1200;
+                ty = result.getTy();
+                tx = result.getTx();
+                ta = result.getTa();
+                telemetry.addData("Limelight TX", tx);
+                telemetry.addData("Limelight TY", ty);
+                telemetry.addData("Limelight TA", ta);
             }
 
         } else{
@@ -149,18 +134,21 @@ public class TeleOpMainLimeLight extends OpMode{
             shootSequenceState = 1;
             shootSequenceTimer.reset();
             positionCompensation = 5;
+            multiplierCompensation = ball1mult;
         } else if(gamepad1.dpad_up && !inShoot) { // Shoot middle ball only
             inShoot = true;
             shootMode = 2;
             shootSequenceState = 3;
             shootSequenceTimer.reset();
             positionCompensation = 10;
+            multiplierCompensation = ball2mult;
         } else if(gamepad1.dpad_right && !inShoot) { // Shoot back ball only
             inShoot = true;
             shootMode = 3;
             shootSequenceState = 5;
             shootSequenceTimer.reset();
             positionCompensation = 15;
+            multiplierCompensation = ball3mult;
         } else if(gamepad1.b && !inShoot) { // Shoot all balls (original sequence)
             inShoot = true;
             shootMode = 0;

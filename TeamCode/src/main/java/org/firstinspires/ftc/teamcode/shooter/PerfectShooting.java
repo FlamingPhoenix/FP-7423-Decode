@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.shooter;
 
 public class PerfectShooting {
 
@@ -11,7 +11,7 @@ public class PerfectShooting {
     * 
     
     */
-    double angle  = Math.toRadians(54);
+    double angle  = Math.toRadians(60);
     double height;
     final double cos2a = Math.pow(Math.cos(angle), 2);
     final double tana = Math.tan(angle);
@@ -22,7 +22,7 @@ public class PerfectShooting {
     public PerfectShooting(double height) {
         this.height = height/39.37; //convert height to meters
     }
-    /**
+    /*
      * Calculates the required velocity to shoot a projectile to a given distance in meters per second
      * @param distance in inches
      * @return
@@ -59,7 +59,7 @@ public class PerfectShooting {
      * @param diameter in mm
      * @return
      */
-    double getVelocityInRPM(double distance, double diameter){
+    public double getVelocityInRPM(double distance, double diameter){
         double velocity = getVelocity(distance);
         return velocityToRPM(velocity, diameter);
     }
