@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.shooter.LimeLightLocator;
 import org.firstinspires.ftc.teamcode.shooter.PerfectShooting;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
+import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 
 @TeleOp
 @Configurable
@@ -36,13 +37,14 @@ public class TeleOpMainLimeLight extends OpMode{
     public static double KD = 0.2;
     public static double KF = 17.2;
     public static double alignkp = -0.04;
-    public static double ball1mult = 0.98;
-    public static double ball2mult = 1.05;
-    public static double ball3mult = 1.05;
+    public static double strafeMultiplier = 0.7; // multiplier for diagonal strafe during auto-align
+    public static double ball1mult = 1;
+    public static double ball2mult = 1;
+    public static double ball3mult = 1;
     //THE REST
 
     private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
-    FieldCentricDrive drive;
+    FieldCentricDrivePinPoint drive;
     DcMotorEx shooter;
     DcMotor intake;
 
@@ -59,13 +61,13 @@ public class TeleOpMainLimeLight extends OpMode{
     LimeLightLocator locator;
     ShootCalculator shooterCalculator;
     double ta, tx, ty,distanceToTarget;
-    double shooterSpeed = -1200; //default shooter velocity in ticks per second
+    double shooterSpeed = -1050; //default shooter velocity in ticks per second
     boolean limeLightWorking = true;
     double positionCompensation;
     double multiplierCompensation = 1.0;
     @Override
     public void init() {
-        drive = new FieldCentricDrive(hardwareMap);
+        drive = new FieldCentricDrivePinPoint(hardwareMap);
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
         front = hardwareMap.servo.get("front");
@@ -83,7 +85,7 @@ public class TeleOpMainLimeLight extends OpMode{
         catch (IllegalArgumentException e){//change to llworking = false on default and set to true when llworking
             limeLightWorking = false;
         }
-        autoAligner = new AutoAlign(drive,alignkp);
+        autoAligner = new AutoAlign(drive,alignkp,strafeMultiplier);
         shooterCalculator = new ShootCalculator(); // height of shooter from ground in inches
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -103,19 +105,21 @@ public class TeleOpMainLimeLight extends OpMode{
 
             //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
             LLResult result = limelight.getLatestResult();
-            shooterSpeed = shooterCalculator.calculateRPMWForTELE(result, positionCompensation) * multiplierCompensation;
+            shooterSpeed = Math.min(-1050, shooterCalculator.calculateRPMWForTELE(result, positionCompensation) * multiplierCompensation);
             if (result != null && result.isValid()) {
                 ty = result.getTy();
                 tx = result.getTx();
                 ta = result.getTa();
+                distanceToTarget = shooterCalculator.distanceToTarget; // Get calculated distance
                 telemetry.addData("Limelight TX", tx);
                 telemetry.addData("Limelight TY", ty);
                 telemetry.addData("Limelight TA", ta);
+                telemetry.addData("Distance to Target (in)", String.format("%.1f", distanceToTarget));
             }
 
         } else{
             autoAlignActive = false;
-            shooterSpeed =-1200;
+            shooterSpeed =-1050;
 
         }
 
@@ -140,14 +144,14 @@ public class TeleOpMainLimeLight extends OpMode{
             shootMode = 2;
             shootSequenceState = 3;
             shootSequenceTimer.reset();
-            positionCompensation = 10;
+            positionCompensation = 11;
             multiplierCompensation = ball2mult;
         } else if(gamepad1.dpad_right && !inShoot) { // Shoot back ball only
             inShoot = true;
             shootMode = 3;
             shootSequenceState = 5;
             shootSequenceTimer.reset();
-            positionCompensation = 15;
+            positionCompensation = 15.5;
             multiplierCompensation = ball3mult;
         } else if(gamepad1.b && !inShoot) { // Shoot all balls (original sequence)
             inShoot = true;
@@ -263,7 +267,7 @@ public class TeleOpMainLimeLight extends OpMode{
             drive.drive(gamepad1, exp);
         }
         else{
-            autoAligner.alignToTargetWithManualDrive(tx,gamepad1.left_stick_y,-gamepad1.left_stick_x*1.1); // 0 is placeholder for tx from limelight
+            autoAligner.alignToTargetWithDiagonalApproach(tx,gamepad1.left_stick_y,-gamepad1.left_stick_x*1.1); // Uses diagonal approach for 45-degree alignment
         }
     }
 }

@@ -17,7 +17,7 @@ public class ShootCalculator {
     double shootHeight = 29.5; //inches
     double distanceCompensation = 0.0;
     final int maxTPS = 28 * 4000; //max shooter speed in ticks per second
-    double lastValidSpeed = -1200;
+    double lastValidSpeed = -1000;
     double ty;
     public double distanceToTarget;
     Pose RedGoalPose = new Pose(144, 144);
@@ -60,14 +60,44 @@ public class ShootCalculator {
             ty = result.getTy();
             double velocity = getVelocityRaw(ty, distanceCompensation);
             if(velocity < 0){
-                return -1200; // safe speed
+                return -1050; // safe speed
             }
             else{
-                return velocityToTPS(velocity);
+                double baseTPS = velocityToTPS(velocity);
+                return applyDistanceScaling(baseTPS, distanceToTarget);
             }
 
         } else{
-            return -1200; // safe speed
+            return -1050; // safe speed
+        }
+    }
+
+    /**
+     * Applies distance-based velocity scaling to prevent overshooting at close range
+     * @param baseTPS base velocity in TPS from physics calculation
+     * @param distance distance to target in inches
+     * @return scaled velocity in TPS
+     */
+    private double applyDistanceScaling(double baseTPS, double distance) {
+        // Close range scaling to prevent overshooting
+        if(distance < 20) {
+            // Very close: reduce to 40-60% of calculated velocity
+            double scaleFactor = 0.4 + (distance / 20.0) * 0.2; // 0.4 at 0", 0.6 at 20"
+            return Math.min(baseTPS * scaleFactor, 800); // hard cap at 800 TPS
+        }
+        else if(distance < 40) {
+            // Medium close: reduce to 60-85% of calculated velocity
+            double scaleFactor = 0.6 + ((distance - 20) / 20.0) * 0.25; // 0.6 at 20", 0.85 at 40"
+            return baseTPS * scaleFactor;
+        }
+        else if(distance < 60) {
+            // Transition range: 85-100% of calculated velocity
+            double scaleFactor = 0.85 + ((distance - 40) / 20.0) * 0.15; // 0.85 at 40", 1.0 at 60"
+            return baseTPS * scaleFactor;
+        }
+        else {
+            // Long range: use full calculated velocity
+            return baseTPS;
         }
     }
 
@@ -85,16 +115,18 @@ public class ShootCalculator {
         if(result != null && result.isValid()){
             ty = result.getTy();
             double velocity = getVelocityRaw(ty, distanceCompensation);
-            double tps = velocityToTPS(velocity);
-            lastValidSpeed = tps;
-            return tps;
+            double baseTPS = velocityToTPS(velocity);
+            double scaledTPS = applyDistanceScaling(baseTPS, distanceToTarget);
+            lastValidSpeed = scaledTPS;
+            return scaledTPS;
 
         } else{
             double distanceToTarget = robotPose.distanceFrom(isRed ? RedGoalPose : BlueGoalPose);
             double velocity = ps.getVelocityInRPM(distanceToTarget + distanceCompensation,shooterDiameter);
-            double tps = velocityToTPS(velocity);
-            lastValidSpeed = tps;
-            return tps;
+            double baseTPS = velocityToTPS(velocity);
+            double scaledTPS = applyDistanceScaling(baseTPS, distanceToTarget);
+            lastValidSpeed = scaledTPS;
+            return scaledTPS;
         }
     }
 
