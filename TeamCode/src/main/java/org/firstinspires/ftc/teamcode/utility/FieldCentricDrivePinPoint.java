@@ -44,6 +44,11 @@ public class FieldCentricDrivePinPoint {
         //reverse motors
         fr.setDirection(DcMotor.Direction.REVERSE);
         br.setDirection(DcMotor.Direction.REVERSE);
+
+        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        imu = hardwareMap.get(IMU.class, "imu");
 //        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
 //        imu.initialize(parameters);
@@ -106,6 +111,7 @@ public class FieldCentricDrivePinPoint {
      */
     public void drive(Gamepad gamepad1, double multiplier){
         // Apply deadzone to joystick inputs
+        pinpointLocalizer.update();
         double x = applyDeadzone(-gamepad1.left_stick_x*1.1);
         double y = applyDeadzone(gamepad1.left_stick_y);
         double rx = applyDeadzone(-0.65*gamepad1.right_stick_x);

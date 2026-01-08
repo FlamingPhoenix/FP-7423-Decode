@@ -29,14 +29,16 @@ public class AutoAlign{
     }
     public void alignToTargetWithManualDrive(double tx, double forward, double strafe){
         //tx is angle to target (from limelight camera apriltag detection)
-        double rotate = Math.max(Math.min(-tx * kP, 1.0), -1.0); //negative because positive tx means target is to
+        double rotate = Math.abs(tx)>0.4?Math.max(Math.min(tx* kP + Math.copySign(0.2,tx), 1.0), -1.0):0; //negative because positive tx means target is to
+        //double rotate = Math.abs(tx)>0.2 ? Math.copySign(kP,-tx):0;
+//        double rotate = Math.abs(tx)>0.2 ? Math.tanh(0.5*tx)*kP : 0 ;
         //the right, so we need to turn left
-        drive.drive(forward, strafe, -rotate); //rotation is inverted in the actual drive method idk why
+        drive.drive(forward, strafe, rotate); //rotation is inverted in the actual drive method idk why
     }
 
     public void alignToTargetWithDiagonalApproach(double tx, double forward, double manualStrafe){
         //tx is angle to target (from limelight camera apriltag detection)
-        double rotate = Math.max(Math.min(-tx * kP, 1.0), -1.0); //negative because positive tx means target is to
+        double rotate = Math.abs(tx)>0.2 ? Math.copySign(kP*3,-tx):0;
         //the right, so we need to turn left
 
         // Calculate diagonal strafe to maintain 45-degree approach angle
