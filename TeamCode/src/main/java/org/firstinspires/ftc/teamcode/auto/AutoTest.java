@@ -16,6 +16,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
@@ -28,6 +31,13 @@ public class AutoTest extends OpMode {
     private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
 
+    // Limelight hardware
+    Limelight3A limelight;
+    boolean limeLightWorking = true;
+    int aprilTagId = -1;
+    boolean aprilTagDetected = false;
+    ElapsedTime aprilTagScanTimer = new ElapsedTime();
+
     // Shooting hardware
     DcMotorEx shooter;
     Servo front, back, middle, linkage;
@@ -36,6 +46,7 @@ public class AutoTest extends OpMode {
     ElapsedTime shootSequenceTimer = new ElapsedTime();
     double shooterSpeed = -1200;
     double firstBallSpeed = -1150; // Slower speed for first ball
+    int shootingOrder = 0; // 0 = normal (back->middle->front), 1 = reverse (front->middle->back), 2 = middle->back->front
 
     @Override
     public void init() {
@@ -45,6 +56,17 @@ public class AutoTest extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(110.699, 135.502, Math.toRadians(90)));
+
+        // Initialize Limelight
+        try {
+            limelight = hardwareMap.get(Limelight3A.class, "limelight");
+            limelight.setPollRateHz(100);
+            limelight.start();
+            limelight.pipelineSwitch(0); // Start with shooting pipeline
+        }
+        catch (IllegalArgumentException e){
+            limeLightWorking = false;
+        }
 
         // Initialize shooting hardware
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
@@ -61,6 +83,7 @@ public class AutoTest extends OpMode {
         paths = new Paths(follower); // Build paths
 
         panelsTelemetry.debug("Status", "Initialized");
+        panelsTelemetry.debug("Limelight", limeLightWorking ? "Active" : "Inactive");
         panelsTelemetry.update(telemetry);
     }
 
@@ -77,6 +100,8 @@ public class AutoTest extends OpMode {
         panelsTelemetry.debug("Heading", follower.getPose().getHeading());
         panelsTelemetry.debug("Shooting", inShoot ? "Active" : "Inactive");
         panelsTelemetry.debug("Shoot State", shootSequenceState);
+        panelsTelemetry.debug("AprilTag ID", aprilTagId);
+        panelsTelemetry.debug("Shooting Order", shootingOrder);
         panelsTelemetry.update(telemetry);
     }
 
@@ -90,6 +115,8 @@ public class AutoTest extends OpMode {
     public static class Paths {
 
         public PathChain Path1;
+        public PathChain Path2;
+        public PathChain Path3;
 
         public Paths(Follower follower) {
             Path1 = follower
@@ -97,7 +124,23 @@ public class AutoTest extends OpMode {
                     .addPath(
                             new BezierLine(new Pose(110.699, 135.502), new Pose(85.709, 100.685))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(35))
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(90))
+                    .build();
+
+            Path2 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(85.709, 100.685), new Pose(85.709, 101.685))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(32))
+                    .build();
+
+            Path3 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(85.709, 101.685), new Pose(102.528, 87.154))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(32), Math.toRadians(180))
                     .build();
         }
     }
@@ -110,14 +153,53 @@ public class AutoTest extends OpMode {
                 break;
             case 1:
                 if (!follower.isBusy()) {
-                    // Start shooting sequence when path is complete
-                    startShooting();
+                    // Switch to AprilTag pipeline and start scanning
+                    if (limeLightWorking) {
+                        limelight.pipelineSwitch(2);
+                        aprilTagScanTimer.reset();
+                    }
                     setPathState(2);
                 }
                 break;
             case 2:
+                // AprilTag scanning phase
+                if (limeLightWorking) {
+                    scanForAprilTag();
+                    // Wait for AprilTag detection or timeout
+                    if (aprilTagDetected || aprilTagScanTimer.milliseconds() > 2000) {
+                        determineShotOrder();
+                        limelight.pipelineSwitch(0); // Switch back to shooting pipeline
+                        setPathState(3);
+                    }
+                } else {
+                    // If Limelight not working, use default shooting order
+                    shootingOrder = 0;
+                    setPathState(3);
+                }
+                break;
+            case 3:
+                follower.followPath(paths.Path2);
+                setPathState(4);
+                break;
+            case 4:
+                if (!follower.isBusy()) {
+                    // Start shooting sequence after Path2 is complete
+                    startShooting();
+                    setPathState(5);
+                }
+                break;
+            case 5:
                 // Wait for shooting to complete
                 if (!inShoot) {
+                    setPathState(6);
+                }
+                break;
+            case 6:
+                follower.followPath(paths.Path3);
+                setPathState(7);
+                break;
+            case 7:
+                if (!follower.isBusy()) {
                     setPathState(-1); // End autonomous
                 }
                 break;
@@ -130,71 +212,245 @@ public class AutoTest extends OpMode {
         pathTimer.resetTimer();
     }
 
+    public void scanForAprilTag() {
+        if (limeLightWorking) {
+            LLResult result = limelight.getLatestResult();
+            if (result != null && result.isValid()) {
+                if (result.getFiducialResults() != null && !result.getFiducialResults().isEmpty()) {
+                    LLResultTypes.FiducialResult fiducial = result.getFiducialResults().get(0);
+                    aprilTagId = (int) fiducial.getFiducialId();
+                    aprilTagDetected = true;
+                }
+            }
+        }
+    }
+
+    public void determineShotOrder() {
+        if (aprilTagDetected) {
+            switch (aprilTagId) {
+                case 21:
+                    shootingOrder = 1; // Reverse order: front->middle->back
+                    break;
+                case 22:
+                    shootingOrder = 2; // Custom order: back->front->middle
+                    break;
+                case 23:
+                default:
+                    shootingOrder = 0; // Normal order: back->middle->front
+                    break;
+            }
+        } else {
+            shootingOrder = 0; // Default to normal order if no tag detected
+        }
+    }
+
     public void startShooting() {
         if (!inShoot) {
             inShoot = true;
-            shootSequenceState = 1;
             shootSequenceTimer.reset();
+
+            // Set initial state based on shooting order
+            switch (shootingOrder) {
+                case 0: // Normal: back->middle->front
+                    shootSequenceState = 1;
+                    break;
+                case 1: // Reverse: front->middle->back
+                    shootSequenceState = 5;
+                    break;
+                case 2: // Custom: back->front->middle
+                    shootSequenceState = 1;
+                    break;
+            }
         }
     }
 
     public void updateShootingSequence() {
         if (inShoot) {
-            switch (shootSequenceState) {
-                case 1: // Move linkage to back position and lift back ball
-                    linkage.setPosition(0.3567);  // Move shooter to back position
-                    shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
-                    if (shootSequenceTimer.milliseconds() > 700) { // Wait for linkage to move
-                        back.setPosition(0.6); // Push back ball up
-                        shootSequenceTimer.reset();
-                        shootSequenceState = 2;
-                    }
+            switch (shootingOrder) {
+                case 0: // Normal order: back->middle->front
+                    updateNormalShootingSequence();
                     break;
-
-                case 2: // Wait then reset back servo and move to middle
-                    if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
-                        back.setPosition(0); // Reset back servo
-                        linkage.setPosition(0.25); // Move shooter to middle position
-                        shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
-                        shootSequenceTimer.reset();
-                        shootSequenceState = 3;
-                    }
+                case 1: // Reverse order: front->middle->back
+                    updateReverseShootingSequence();
                     break;
-
-                case 3: // Move linkage to middle position and lift middle ball
-                    if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
-                        middle.setPosition(0.6); // Push middle ball up
-                        shootSequenceTimer.reset();
-                        shootSequenceState = 4;
-                    }
-                    break;
-
-                case 4: // Wait then reset middle servo and move to front
-                    if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
-                        middle.setPosition(0); // Reset middle servo
-                        linkage.setPosition(0.0); // Move shooter to front position
-                        shootSequenceTimer.reset();
-                        shootSequenceState = 5;
-                    }
-                    break;
-
-                case 5: // Move linkage to front position and lift front ball
-                    if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
-                        front.setPosition(0.6); // Push front ball up
-                        shootSequenceTimer.reset();
-                        shootSequenceState = 6;
-                    }
-                    break;
-
-                case 6: // End sequence
-                    if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
-                        front.setPosition(0); // Reset front servo
-                        shooter.setPower(0);
-                        inShoot = false;
-                        shootSequenceState = 0;
-                    }
+                case 2: // Custom order: middle->back->front
+                    updateCustomShootingSequence();
                     break;
             }
+        }
+    }
+
+    public void updateNormalShootingSequence() {
+        switch (shootSequenceState) {
+            case 1: // Move linkage to back position and lift back ball
+                linkage.setPosition(0.3567);  // Move shooter to back position
+                shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
+                if (shootSequenceTimer.milliseconds() > 700) { // Wait for linkage to move
+                    back.setPosition(0.6); // Push back ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 2;
+                }
+                break;
+
+            case 2: // Wait then reset back servo and move to middle
+                if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
+                    back.setPosition(0); // Reset back servo
+                    linkage.setPosition(0.25); // Move shooter to middle position
+                    shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 3;
+                }
+                break;
+
+            case 3: // Move linkage to middle position and lift middle ball
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
+                    middle.setPosition(0.6); // Push middle ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 4;
+                }
+                break;
+
+            case 4: // Wait then reset middle servo and move to front
+                if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
+                    middle.setPosition(0.2); // Keep middle servo up
+                    linkage.setPosition(0.0); // Move shooter to front position
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 5;
+                }
+                break;
+
+            case 5: // Move linkage to front position and lift front ball
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
+                    front.setPosition(0.6); // Push front ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 6;
+                }
+                break;
+
+            case 6: // End sequence
+                if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
+                    front.setPosition(0); // Reset front servo
+                    shooter.setPower(0);
+                    inShoot = false;
+                    shootSequenceState = 0;
+                }
+                break;
+        }
+    }
+
+    public void updateReverseShootingSequence() {
+        switch (shootSequenceState) {
+            case 5: // Start with front ball (state 5 for consistency)
+                linkage.setPosition(0.0);  // Move shooter to front position
+                shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
+                if (shootSequenceTimer.milliseconds() > 1000) { // Longer wait for linkage to move
+                    front.setPosition(0.6); // Push front ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 6;
+                }
+                break;
+
+            case 6: // Wait then reset front servo and move to middle
+                if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
+                    front.setPosition(0); // Reset front servo
+                    linkage.setPosition(0.25); // Move shooter to middle position
+                    shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 3;
+                }
+                break;
+
+            case 3: // Move linkage to middle position and lift middle ball
+                if (shootSequenceTimer.milliseconds() > 600) { // Longer wait for linkage to move
+                    middle.setPosition(0.6); // Push middle ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 4;
+                }
+                break;
+
+            case 4: // Wait then reset middle servo and move to back
+                if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
+                    // middle.setPosition(0); // Keep middle servo up
+                    linkage.setPosition(0.3567); // Move shooter to back position
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 1;
+                }
+                break;
+
+            case 1: // Move linkage to back position and lift back ball
+                if (shootSequenceTimer.milliseconds() > 600) { // Longer wait for linkage to move
+                    back.setPosition(0.6); // Push back ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 2;
+                }
+                break;
+
+            case 2: // End sequence
+                if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
+                    back.setPosition(0); // Reset back servo
+                    shooter.setPower(0);
+                    inShoot = false;
+                    shootSequenceState = 0;
+                }
+                break;
+        }
+    }
+
+    public void updateCustomShootingSequence() {
+        switch (shootSequenceState) {
+            case 1: // Start with back ball
+                linkage.setPosition(0.3567);  // Move shooter to back position
+                shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
+                if (shootSequenceTimer.milliseconds() > 1000) { // Longer wait for linkage to move
+                    back.setPosition(0.6); // Push back ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 2;
+                }
+                break;
+
+            case 2: // Wait then reset back servo and move to front
+                if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
+                    back.setPosition(0); // Reset back servo
+                    linkage.setPosition(0.0); // Move shooter to front position
+                    shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 5;
+                }
+                break;
+
+            case 5: // Move linkage to front position and lift front ball
+                if (shootSequenceTimer.milliseconds() > 600) { // Longer wait for linkage to move
+                    front.setPosition(0.6); // Push front ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 6;
+                }
+                break;
+
+            case 6: // Wait then reset front servo and move to middle
+                if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
+                    front.setPosition(0); // Reset front servo
+                    linkage.setPosition(0.25); // Move shooter to middle position
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 3;
+                }
+                break;
+
+            case 3: // Move linkage to middle position and lift middle ball
+                if (shootSequenceTimer.milliseconds() > 600) { // Longer wait for linkage to move
+                    middle.setPosition(0.6); // Push middle ball up
+                    shootSequenceTimer.reset();
+                    shootSequenceState = 4;
+                }
+                break;
+
+            case 4: // End sequence
+                if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
+                    // middle.setPosition(0); // Keep middle servo up
+                    shooter.setPower(0);
+                    inShoot = false;
+                    shootSequenceState = 0;
+                }
+                break;
         }
     }
 }
