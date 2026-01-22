@@ -104,6 +104,7 @@ public class TeleOpMainLimeLight extends OpMode{
     @Override
     public void loop() {
         telemetry.addData("Limelight",limeLightWorking ? "Active" : "Inactive");
+        telemetry.addData("Velocity Compensation", shooterCalculator.getVelocityCompensation());
         if(gamepad1.x){
             drive.resetIMU();
         }
@@ -127,6 +128,9 @@ public class TeleOpMainLimeLight extends OpMode{
             lastUp = false;
             lastDown = false;
         }
+        if(gamepad2.x){
+            shooterCalculator.setVelocityCompensation(280);
+        }
         telemetry.addData("heading",drive.getHeading());
         // Check for auto-align activation
         if(limeLightWorking) {
@@ -140,9 +144,9 @@ public class TeleOpMainLimeLight extends OpMode{
                 tx = result.getTx();
                 ta = result.getTa();
                 distanceToTarget = shooterCalculator.distanceToTarget; // Get calculated distance
-                telemetry.addData("Limelight TX", tx);
-                telemetry.addData("Limelight TY", ty);
-                telemetry.addData("Limelight TA", ta);
+//                telemetry.addData("Limelight TX", tx);
+//                telemetry.addData("Limelight TY", ty);
+//                telemetry.addData("Limelight TA", ta);
                 telemetry.addData("Distance to Target (in)", String.format("%.1f", distanceToTarget));
             }
             else{
@@ -203,15 +207,20 @@ public class TeleOpMainLimeLight extends OpMode{
         }
 
         // Intake controls
-        if(gamepad1.left_trigger > 0.1) {
+        if(gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
             intake.setPower(gamepad1.left_trigger*0.7);
-        } else if(gamepad1.left_bumper) {
+        } else if(gamepad1.left_bumper || gamepad2.left_bumper) {
+            //intake
             intake.setPower(-0.9);
             wheel.setPower(1);
 
         } else {
             intake.setPower(0);
             wheel.setPower(0);
+        }
+        if(gamepad2.right_bumper){
+            //keep wheel on for ball
+            wheel.setPower(1);
         }
 
         if(inShoot){
