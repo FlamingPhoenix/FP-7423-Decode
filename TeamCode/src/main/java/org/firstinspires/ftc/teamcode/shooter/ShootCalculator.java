@@ -7,8 +7,8 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 @Configurable
 public class ShootCalculator {
     //CONFIGURABLE PARAMETERS
-    public static double velocityMultiplier = 2.17;
-    public static double velocityCompensation = 280;
+    public double velocityMultiplier = 2.17;
+    public int velocityCompensation = 280;
     //END CONFIGURABLE PARAMETERS
 
     double LLAngle = 26;//degrees
@@ -160,10 +160,10 @@ public class ShootCalculator {
     public void setVelocityMultiplier(double velocityMultiplier) {
         this.velocityMultiplier = velocityMultiplier;
     }
-    public double getVelocityCompensation() {
+    public int getVelocityCompensation() {
         return velocityCompensation;
     }
-    public void setVelocityCompensation(double velocityCompensation) {
+    public void setVelocityCompensation(int velocityCompensation) {
         this.velocityCompensation = velocityCompensation;
     }
 }

@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.teamcode.shooter.PerfectShooting;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
+import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 
 @TeleOp
 @Configurable
@@ -36,17 +38,18 @@ public class TeleOpMainLimeLight extends OpMode{
     public static double KI = 0;
     public static double KD = 0.2;
     public static double KF = 17.2;
-    public static double alignkp = -0.04;
+    public static double alignkp = -0.06;
     public static double strafeMultiplier = 0.7; // multiplier for diagonal strafe during auto-align
     public static double ball1mult = 1;
     public static double ball2mult = 1;
     public static double ball3mult = 1;
     //THE REST
-
+    RevBlinkinLedDriver blinkin;
     private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
     FieldCentricDrivePinPoint drive;
     DcMotorEx shooter;
     DcMotor intake;
+
 
     Servo front, back, middle, linkage;
     CRServo wheel;
@@ -65,11 +68,17 @@ public class TeleOpMainLimeLight extends OpMode{
     boolean limeLightWorking = true;
     double positionCompensation;
     double multiplierCompensation = 1.0;
+
+
+
+    boolean lastUp, lastDown = false;
     @Override
     public void init() {
+        velocityCompensation = PersistentStorage.loadX(this.hardwareMap.appContext,280);
         drive = new FieldCentricDrivePinPoint(hardwareMap);
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
+//        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         front = hardwareMap.servo.get("front");
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
@@ -97,6 +106,26 @@ public class TeleOpMainLimeLight extends OpMode{
         telemetry.addData("Limelight",limeLightWorking ? "Active" : "Inactive");
         if(gamepad1.x){
             drive.resetIMU();
+        }
+        if(gamepad2.dpad_up){
+            //increase shootcalculator.velocityCompensation
+            if(!lastUp){
+                shooterCalculator.setVelocityCompensation(shooterCalculator.getVelocityCompensation()+10);
+                lastUp = true;
+                PersistentStorage.saveX(hardwareMap.appContext, shooterCalculator.getVelocityCompensation());
+
+            }
+        } else if (gamepad2.dpad_down){
+            //decrease shootcalculator.velocityCompensation
+            if(!lastDown){
+                shooterCalculator.setVelocityCompensation(shooterCalculator.getVelocityCompensation()-10);
+                lastDown = true;
+                PersistentStorage.saveX(hardwareMap.appContext, shooterCalculator.getVelocityCompensation());
+
+            }
+        } else{
+            lastUp = false;
+            lastDown = false;
         }
         telemetry.addData("heading",drive.getHeading());
         // Check for auto-align activation
