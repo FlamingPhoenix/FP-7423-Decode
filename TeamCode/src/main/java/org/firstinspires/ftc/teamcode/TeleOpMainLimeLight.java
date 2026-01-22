@@ -16,9 +16,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.LimeLightLocator;
-import org.firstinspires.ftc.teamcode.shooter.PerfectShooting;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
-import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 
@@ -138,7 +136,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
             //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
             LLResult result = limelight.getLatestResult();
-            shooterSpeed = Math.min(-1050, shooterCalculator.calculateRPMWForTELE(result, positionCompensation) * multiplierCompensation);
+            shooterSpeed = Math.min(-1050, shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation);
             if (result != null && result.isValid()) {
                 ty = result.getTy();
                 tx = result.getTx();
@@ -243,7 +241,7 @@ public class TeleOpMainLimeLight extends OpMode{
                             inShoot = false;
                             shootSequenceState = 0;
                         } else { // Continue to middle ball for full sequence
-                            linkage.setPosition(0.25); // Move shooter to middle position
+                            linkage.setPosition(0.18); // Move shooter to middle position
                             shootSequenceTimer.reset();
                             shootSequenceState = 3;
                         }
@@ -252,7 +250,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
                 case 3: // Move linkage to middle position and lift middle ball
                     if(shootMode == 2) { // Middle ball only - need to position linkage first
-                        linkage.setPosition(0.25); // Move shooter to middle position
+                        linkage.setPosition(0.18); // Move shooter to middle position
                         shooter.setVelocity(shooterSpeed);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move

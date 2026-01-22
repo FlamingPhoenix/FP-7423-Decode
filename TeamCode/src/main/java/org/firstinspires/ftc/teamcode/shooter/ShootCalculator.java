@@ -51,14 +51,14 @@ public class ShootCalculator {
     /**
      * Calculates the RPM needed to shoot at the target given the LLResult from the limelight
      * Safety fallback RPM is -1200
-     * @param result Limelight LLResult
-     * @param distanceCompensation additional distance compensation in inches based on shooter position
+     * @param limelightData Limelight LLResult
+     * @param positionCompensation additional distance compensation in inches based on shooter position
      * @return velocity in TPS
      */
-    public double calculateRPMWForTELE(LLResult result, double distanceCompensation){
-        if(result != null && result.isValid()){
-            ty = result.getTy();
-            double velocity = getVelocityRaw(ty, distanceCompensation);
+    public double calculateRPMForTele(LLResult limelightData, double positionCompensation){
+        if(limelightData != null && limelightData.isValid()){
+            ty = limelightData.getTy();
+            double velocity = getVelocityRaw(ty, positionCompensation);
             if(velocity < 0){
                 return -1050; // safe speed
             }
