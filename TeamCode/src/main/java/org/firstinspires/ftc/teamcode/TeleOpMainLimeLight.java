@@ -23,15 +23,10 @@ import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 @TeleOp
 @Configurable
 public class TeleOpMainLimeLight extends OpMode{
-    /*
-    TODO 12-9-25
-    FIND IF CONFLICT BETWEEN setVelocity and setPower
-    IMPLEMENT LIMELIGHT
-    ADD BUTTON FOR AUTOALIGN
-     */
+
     //CONFIGURABLES
     public static double velocityMultiplier = 2.14;
-    public static double velocityCompensation = 280; //tps
+    public static int velocityCompensation = 280; //tps
     public static double KP = 60;
     public static double KI = 0;
     public static double KD = 0.2;
@@ -66,6 +61,8 @@ public class TeleOpMainLimeLight extends OpMode{
     boolean limeLightWorking = true;
     double positionCompensation;
     double multiplierCompensation = 1.0;
+    ElapsedTime gametimer = new ElapsedTime();
+    boolean isEndGame = false;
 
 
 
@@ -98,6 +95,13 @@ public class TeleOpMainLimeLight extends OpMode{
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(KP, KI, KD, KF));
+
+        shooterCalculator.setVelocityCompensation(velocityCompensation);
+
+    }
+    @Override
+    public void start() {
+        gametimer.reset();
     }
     @Override
     public void loop() {
@@ -308,6 +312,14 @@ public class TeleOpMainLimeLight extends OpMode{
         }
         else{
             autoAligner.alignToTargetWithManualDrive(tx,gamepad1.left_stick_y,-gamepad1.left_stick_x*1.1); // Uses diagonal approach for 45-degree alignment
+        }
+
+        //endgame notifi
+        if(gametimer.seconds() > 99 && !isEndGame){
+            isEndGame = true;
+            gamepad1.rumble(1000);
+            gamepad2.rumble(1000);
+
         }
     }
 }
