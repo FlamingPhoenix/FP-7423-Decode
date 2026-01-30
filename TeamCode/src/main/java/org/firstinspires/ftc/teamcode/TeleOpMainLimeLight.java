@@ -225,7 +225,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
         // Shooter controls (only when not in sequence)
         if(!inShoot) {
-            if(gamepad1.right_bumper) {
+            if(gamepad1.right_bumper || gamepad2.right_bumper) {
                 shooter.setVelocity(shooterSpeed);
             } else {
                 shooter.setPower(0);
@@ -244,7 +244,7 @@ public class TeleOpMainLimeLight extends OpMode{
             intake.setPower(0);
             wheel.setPower(0);
         }
-        if(gamepad2.right_bumper){
+        if(gamepad2.right_trigger > 0.1){
             //keep wheel on for ball
             wheel.setPower(1);
         }
