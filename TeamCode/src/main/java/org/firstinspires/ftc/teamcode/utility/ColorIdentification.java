@@ -1,38 +1,27 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.utility;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
 import android.graphics.Color;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
-@TeleOp
-public class colortest extends OpMode
-{
-
+public class ColorIdentification {
+    NormalizedColorSensor colorSensor;
+    public ColorIdentification(NormalizedColorSensor col){
+        colorSensor = col;
+        colorSensor.setGain(2.4f);
+    }
     int minidx;
-    NormalizedColorSensor col1, col2;
     private float[] hsvValues = new float[3];
     final private int[] PGN = {240,160,34};
     final private String[] PGN_NAMES = {"Purple","Green","OTHER"};
-    @Override
-    public void init() {
-        col1 = hardwareMap.get(NormalizedColorSensor.class, "col2");
-//        col2 = hardwareMap.get(NormalizedColorSensor.class, "col2");
-        col1.setGain(2.4f);
-    }
-    @Override
-    public void loop() {
 
-        NormalizedRGBA color1 = col1.getNormalizedColors();
-//        NormalizedRGBA color2 = col2.getNormalizedColors();
-
-        Color.colorToHSV(color1.toColor(),hsvValues);
-//        Color.colorToHSV(color2.toColor(),hsvValues[1]);
+    public ARTIFACT_COLOR getCurrentColor(){
+        NormalizedRGBA color = colorSensor.getNormalizedColors();
+        Color.colorToHSV(color.toColor(),hsvValues);
         double[] distances = {
                 circularDistance(hsvValues[0], PGN[0]),
                 circularDistance(hsvValues[0], PGN[1]),
@@ -45,13 +34,20 @@ public class colortest extends OpMode
                 minidx = j;
             }
         }
-        telemetry.addData("Hue", hsvValues[0]);
-        telemetry.addData("sensed color", PGN_NAMES[minidx]);
-        telemetry.update();
+
+        return minidx == 0 ? ARTIFACT_COLOR.PURPLE : (minidx == 1 ? ARTIFACT_COLOR.GREEN : ARTIFACT_COLOR.OTHER);
 
     }
+    public boolean artifactPresent(){
+        ARTIFACT_COLOR currentColor = getCurrentColor();
+        return !(currentColor == ARTIFACT_COLOR.OTHER);
+    }
+
+
     private double circularDistance(double a, double b){
         double diff = abs(a-b);
         return min(diff,360-diff);
     }
+
+
 }
