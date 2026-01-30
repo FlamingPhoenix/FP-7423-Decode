@@ -38,7 +38,7 @@ public class TeleOpMainLimeLight extends OpMode{
     public static double ball3mult = 1;
     //THE REST
     RevBlinkinLedDriver blinkin;
-    private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
+    //private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
     FieldCentricDrivePinPoint drive;
     DcMotorEx shooter;
     DcMotor intake;
@@ -54,7 +54,7 @@ public class TeleOpMainLimeLight extends OpMode{
     boolean autoAlignActive = false;
     Limelight3A limelight;
     AutoAlign autoAligner;
-    LimeLightLocator locator;
+    //LimeLightLocator locator;
     ShootCalculator shooterCalculator;
     double ta, tx, ty,distanceToTarget;
     double shooterSpeed = -1050; //default shooter velocity in ticks per second
@@ -66,10 +66,11 @@ public class TeleOpMainLimeLight extends OpMode{
 
 
 
-    boolean lastUp, lastDown = false;
+    boolean lastUp, lastDown, lastLeft, lastRight = false;
     @Override
     public void init() {
-        velocityCompensation = PersistentStorage.loadX(this.hardwareMap.appContext,280);
+        velocityCompensation = (int) PersistentStorage.loadDouble(this.hardwareMap.appContext,"b",280);
+        velocityMultiplier = (int) PersistentStorage.loadDouble(this.hardwareMap.appContext,"m",2.14);
         drive = new FieldCentricDrivePinPoint(hardwareMap);
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -97,6 +98,7 @@ public class TeleOpMainLimeLight extends OpMode{
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(KP, KI, KD, KF));
 
         shooterCalculator.setVelocityCompensation(velocityCompensation);
+        shooterCalculator.setVelocityMultiplier(velocityMultiplier);
 
     }
     @Override
@@ -107,6 +109,7 @@ public class TeleOpMainLimeLight extends OpMode{
     public void loop() {
         telemetry.addData("Limelight",limeLightWorking ? "Active" : "Inactive");
         telemetry.addData("Velocity Compensation", shooterCalculator.getVelocityCompensation());
+        telemetry.addData("Velocity Multiplier", shooterCalculator.getVelocityMultiplier());
         if(gamepad1.x){
             drive.resetIMU();
         }
@@ -115,7 +118,7 @@ public class TeleOpMainLimeLight extends OpMode{
             if(!lastUp){
                 shooterCalculator.setVelocityCompensation(shooterCalculator.getVelocityCompensation()+10);
                 lastUp = true;
-                PersistentStorage.saveX(hardwareMap.appContext, shooterCalculator.getVelocityCompensation());
+                PersistentStorage.saveDouble(hardwareMap.appContext,"b", shooterCalculator.getVelocityCompensation());
 
             }
         } else if (gamepad2.dpad_down){
@@ -123,15 +126,36 @@ public class TeleOpMainLimeLight extends OpMode{
             if(!lastDown){
                 shooterCalculator.setVelocityCompensation(shooterCalculator.getVelocityCompensation()-10);
                 lastDown = true;
-                PersistentStorage.saveX(hardwareMap.appContext, shooterCalculator.getVelocityCompensation());
+                PersistentStorage.saveDouble(hardwareMap.appContext,"b", shooterCalculator.getVelocityCompensation());
 
             }
         } else{
             lastUp = false;
             lastDown = false;
         }
+        if(gamepad2.dpad_left){
+            if(!lastLeft){
+                shooterCalculator.setVelocityMultiplier(shooterCalculator.getVelocityMultiplier()-0.05);
+                lastLeft = true;
+                PersistentStorage.saveDouble(hardwareMap.appContext,"m", shooterCalculator.getVelocityMultiplier());
+            }
+        } else if (gamepad2.dpad_right){
+            if(!lastRight){
+                shooterCalculator.setVelocityMultiplier(shooterCalculator.getVelocityMultiplier()+0.05);
+                lastRight = true;
+                PersistentStorage.saveDouble(hardwareMap.appContext,"m", shooterCalculator.getVelocityMultiplier());
+            }
+        } else{
+            lastLeft = false;
+            lastRight = false;
+        }
         if(gamepad2.x){
             shooterCalculator.setVelocityCompensation(280);
+            PersistentStorage.saveDouble(hardwareMap.appContext,"b", shooterCalculator.getVelocityCompensation());
+        }
+        if(gamepad2.y){
+            shooterCalculator.setVelocityMultiplier(2.14);
+            PersistentStorage.saveDouble(hardwareMap.appContext,"m", shooterCalculator.getVelocityMultiplier());
         }
         telemetry.addData("heading",drive.getHeading());
         // Check for auto-align activation
@@ -166,9 +190,9 @@ public class TeleOpMainLimeLight extends OpMode{
 
         // Add telemetry for debugging drive issues
         telemetry.addData("IMU Heading (deg)", Math.toDegrees(drive.getHeading()));
-        telemetry.addData("Left Stick X", gamepad1.left_stick_x);
-        telemetry.addData("Left Stick Y", gamepad1.left_stick_y);
-        telemetry.addData("Right Stick X", gamepad1.right_stick_x);
+//        telemetry.addData("Left Stick X", gamepad1.left_stick_x);
+//        telemetry.addData("Left Stick Y", gamepad1.left_stick_y);
+//        telemetry.addData("Right Stick X", gamepad1.right_stick_x);
 
         // Individual ball shooting controls
         if(gamepad1.dpad_left && !inShoot) { // Shoot front ball only
@@ -302,7 +326,7 @@ public class TeleOpMainLimeLight extends OpMode{
             }
         }
 
-        telemetry.addData("shooter velocity", shooter.getVelocity());
+//        telemetry.addData("shooter velocity", shooter.getVelocity());
         telemetry.update();
 
 
@@ -319,7 +343,6 @@ public class TeleOpMainLimeLight extends OpMode{
             isEndGame = true;
             gamepad1.rumble(1000);
             gamepad2.rumble(1000);
-
         }
     }
 }
