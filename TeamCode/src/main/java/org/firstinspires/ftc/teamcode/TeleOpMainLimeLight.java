@@ -254,7 +254,7 @@ public class TeleOpMainLimeLight extends OpMode{
                 case 1: // Move linkage to back position and lift back ball
                     linkage.setPosition(0.3567);  // Move shooter to back position
                     shooter.setVelocity(shooterSpeed);
-                    if(shootSequenceTimer.milliseconds() > 700) { // Wait for linkage to move
+                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                         back.setPosition(0.6); // Push back ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 2;
@@ -262,7 +262,7 @@ public class TeleOpMainLimeLight extends OpMode{
                     break;
 
                 case 2: // Wait then reset back servo and move to middle
-                    if(shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
+                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
                         back.setPosition(0); // Reset back servo
                         if(shootMode == 1) { // Back ball only
                             shooter.setPower(0);
@@ -289,7 +289,7 @@ public class TeleOpMainLimeLight extends OpMode{
                     break;
 
                 case 4: // Wait then reset middle servo and move to front
-                    if(shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
+                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
                         middle.setPosition(0); // Reset middle servo
                         if(shootMode == 2) { // Middle ball only
                             shooter.setPower(0);
