@@ -22,15 +22,15 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
-@Configurable // Panels
-public class AutoTest extends OpMode {
+@Autonomous(name = "Auto Test Blue", group = "Autonomous")
+@Configurable
+public class AutoTestBlue extends OpMode {
 
-    private TelemetryManager panelsTelemetry; // Panels Telemetry instance
-    public Follower follower; // Pedro Pathing follower instance
-    private Timer pathTimer; // Timer for path state transitions
-    private int pathState; // Current autonomous path state (state machine)
-    private Paths paths; // Paths defined in the Paths class
+    private TelemetryManager panelsTelemetry;
+    public Follower follower;
+    private Timer pathTimer;
+    private int pathState;
+    private Paths paths;
 
     // Limelight hardware
     Limelight3A limelight;
@@ -50,7 +50,7 @@ public class AutoTest extends OpMode {
     int shootSequenceState = 0;
     ElapsedTime shootSequenceTimer = new ElapsedTime();
     double shooterSpeed = -1050;
-    double firstBallSpeed = -1050; // Slower speed for first ball
+    double firstBallSpeed = -1050;
     int shootingOrder = 0; // 0 = normal (back->middle->front), 1 = reverse (front->middle->back), 2 = middle->back->front
     int storedShootingOrder = 0; // Store AprilTag order for second shooting sequence
     boolean isFirstShoot = true; // Track if this is the first shooting sequence
@@ -63,7 +63,7 @@ public class AutoTest extends OpMode {
         shootSequenceTimer = new ElapsedTime();
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(110.252, 135.719, Math.toRadians(0)));
+        follower.setStartingPose(new Pose(34.000, 135.719, Math.toRadians(180)));
 
         // Initialize Limelight
         try {
@@ -92,7 +92,7 @@ public class AutoTest extends OpMode {
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(60, 0, 0.2, 17.2));
 
-        paths = new Paths(follower); // Build paths
+        paths = new Paths(follower);
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.debug("Limelight", limeLightWorking ? "Active" : "Inactive");
@@ -101,15 +101,14 @@ public class AutoTest extends OpMode {
 
     @Override
     public void loop() {
-        follower.update(); // Update Pedro Pathing
-        pathState = autonomousPathUpdate(); // Update autonomous state machine
-        updateShootingSequence(); // Update shooting sequence
+        follower.update();
+        pathState = autonomousPathUpdate();
+        updateShootingSequence();
 
-        // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
-        panelsTelemetry.debug("Heading", follower.getPose().getHeading());
+        panelsTelemetry.debug("Heading", Math.toDegrees(follower.getPose().getHeading()));
         panelsTelemetry.debug("Shooting", inShoot ? "Active" : "Inactive");
         panelsTelemetry.debug("Shoot State", shootSequenceState);
         panelsTelemetry.debug("AprilTag ID", aprilTagId);
@@ -125,7 +124,6 @@ public class AutoTest extends OpMode {
     }
 
     public static class Paths {
-
         public PathChain Path2;
         public PathChain Path3;
         public PathChain Path4;
@@ -141,118 +139,115 @@ public class AutoTest extends OpMode {
         public Paths(Follower follower) {
             Path2 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(110.252, 135.719),
+                  new Pose(34.000, 135.719),
 
-                  new Pose(106.316, 111.408)
+                  new Pose(38.000, 111.408)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(36))
+              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(144))
 
               .build();
 
             Path3 = follower.pathBuilder().addPath(
                 new BezierCurve(
-                  new Pose(106.316, 111.408),
-                  new Pose(90.602, 107.453),
-                  new Pose(91.748, 82.750)
+                  new Pose(38.000, 111.408),
+                  new Pose(54.000, 107.453),
+                  new Pose(52.252, 90.750)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(180))
+              ).setLinearHeadingInterpolation(Math.toRadians(144), Math.toRadians(0))
 
               .build();
 
             Path4 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(91.748, 82.750),
+                  new Pose(52.252, 90.750),
 
-                  new Pose(123.000, 82.750)
+                  new Pose(21.000, 90.750)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
 
               .build();
 
-
             Path5 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(123.000, 82.750),
+                  new Pose(21.000, 90.750),
 
-                  new Pose(109.000, 103.000)
+                  new Pose(35.000, 103.000)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(47))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(133))
+
               .build();
 
             Path6 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(109.000, 103.000),
+                  new Pose(35.000, 103.000),
 
-                  new Pose(98.000, 59.500)
+                  new Pose(46.000, 67.500)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(180))
+              ).setLinearHeadingInterpolation(Math.toRadians(133), Math.toRadians(0))
+
               .build();
 
             Path7 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(98.000, 59.500),
+                new BezierLine(
+                  new Pose(46.000, 67.500),
 
-                                    new Pose(125.000, 59.500)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-                    .build();
+                  new Pose(19.000, 67.500)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+
+              .build();
 
             Path8 = follower.pathBuilder().addPath(
                 new BezierCurve(
-                  new Pose(125.000, 59.000),
-                  new Pose(102.182, 78.155),
-                  new Pose(109.000, 103.000)
+                  new Pose(19.000, 67.000),
+                  new Pose(42.000, 78.155),
+                  new Pose(35.000, 103.000)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(49))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(131))
+
               .build();
-            /*
-
-            Path8 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(125.000, 59.000),
-                  new Pose(109.000, 103.000)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(49))
-              .build();*/
-
 
             Path9 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(109.000, 103.000),
+                  new Pose(35.000, 103.000),
 
-                  new Pose(98.000, 36.000)
+                  new Pose(46.000, 44.000)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(180))
+              ).setLinearHeadingInterpolation(Math.toRadians(131), Math.toRadians(0))
+
               .build();
 
             Path10 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(98.000, 36.000),
+                  new Pose(46.000, 44.000),
 
-                  new Pose(125.000, 36.000)
+                  new Pose(19.000, 44.000)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+
               .build();
 
             Path11 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(125.000, 36.000),
+                  new Pose(19.000, 44.000),
 
-                  new Pose(105.280, 98.842)
+                  new Pose(38.720, 98.842)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(47))
-              .build();
-            Path12 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(105.280, 98.842),
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(133))
 
-                                    new Pose(115, 82.750)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(0))
-                    .build();
+              .build();
+
+            Path12 = follower.pathBuilder().addPath(
+                new BezierLine(
+                  new Pose(38.720, 98.842),
+
+                  new Pose(29, 82.750)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(133), Math.toRadians(180))
+
+              .build();
         }
     }
-
 
     public int autonomousPathUpdate() {
         switch (pathState) {
@@ -320,12 +315,12 @@ public class AutoTest extends OpMode {
             case 10:
                 // 500ms wait after Path5
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    // Stop intake motor but keep wheel running for final sequence
+                    // Stop intake motor but keep wheel running for sequence
                     intake.setPower(0);
-                    // Override shooter speeds for final sequence
+                    // Override shooter speeds for sequence
                     shooterSpeed = -1050;
                     firstBallSpeed = -1050;
-                    startShooting(); // Trigger normal shooting sequence
+                    startShooting(); // Trigger shooting sequence
                     setPathState(11);
                 }
                 break;
@@ -446,7 +441,7 @@ public class AutoTest extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
                     // Stop intake motor but keep wheel running for final sequence
                     intake.setPower(0);
-                    // Use high speeds for final sequence
+                    // Use same speeds for final sequence
                     shooterSpeed = -1050;
                     firstBallSpeed = -1050;
                     startShooting(); // Trigger final shooting sequence

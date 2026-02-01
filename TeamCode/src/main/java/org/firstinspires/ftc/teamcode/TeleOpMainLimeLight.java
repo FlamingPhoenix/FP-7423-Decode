@@ -276,13 +276,13 @@ public class TeleOpMainLimeLight extends OpMode{
                     }
                     break;
 
-                case 3: // Move linkage to middle position and lift middle ball
+case 3: // Move linkage to middle position  and lift middle ball
                     if(shootMode == 2) { // Middle ball only - need to position linkage first
                         linkage.setPosition(0.18); // Move shooter to middle position
                         shooter.setVelocity(shooterSpeed);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
-                        middle.setPosition(0.6); // Push middle ball up
+                        middle.setPosition(0.7); // Push middle ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 4;
                     }
