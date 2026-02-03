@@ -8,6 +8,7 @@ public class AutoAlign{
 
     public double kP;
     public double strafeMultiplier;
+    public double targetOffset = 0.0;
 
     public AutoAlign(FieldCentricDrivePinPoint drive, double kP){
         this.drive = drive;
@@ -29,26 +30,19 @@ public class AutoAlign{
     }
     public void alignToTargetWithManualDrive(double tx, double forward, double strafe){
         //tx is angle to target (from limelight camera apriltag detection)
-        double rotate = Math.abs(tx)>0.8?Math.max(Math.min(tx* kP + Math.copySign(0.2,tx), 1.0), -1.0):0; //negative because positive tx means target is to
-        //double rotate = Math.abs(tx)>0.2 ? Math.copySign(kP,-tx):0;
-//        double rotate = Math.abs(tx)>0.2 ? Math.tanh(0.5*tx)*kP : 0 ;
-        //the right, so we need to turn left
-        drive.drive(forward, strafe, rotate); //rotation is inverted in the actual drive method idk why
+        double alignmentError = tx - targetOffset; // Target the offset instead of zero
+
+        // Larger dead zone to prevent oscillation, and limit max rotation speed
+        double rotate = 0;
+        if (Math.abs(alignmentError) > 1.0) { // Increased from 0.3 to 1.0 degrees
+            rotate = Math.max(Math.min(alignmentError * kP, 0.3), -0.3); // Limited max rotation to 0.3
+        }
+
+        drive.drive(forward, strafe, rotate);
     }
 
-    public void alignToTargetWithDiagonalApproach(double tx, double forward, double manualStrafe){
-        //tx is angle to target (from limelight camera apriltag detection)
-        double rotate = Math.abs(tx)>0.2 ? Math.copySign(kP*3,-tx):0;
-        //the right, so we need to turn left
-
-        // Calculate diagonal strafe to maintain 45-degree approach angle
-        // Strafe in the same direction as rotation to maintain diagonal approach
-        double diagonalStrafe = -tx * kP * strafeMultiplier; // configurable strafe multiplier for 45-degree approach
-        diagonalStrafe = Math.max(Math.min(diagonalStrafe, 1.0), -1.0); // Clamp to [-1, 1]
-
-        // Combine manual strafe input with diagonal strafe
-        double totalStrafe = Math.max(Math.min(manualStrafe + diagonalStrafe, 1.0), -1.0);
-
-        drive.drive(forward, totalStrafe, -rotate); //rotation is inverted in the actual drive method idk why
+    public void setTargetOffset(double offset) {
+        this.targetOffset = offset;
     }
+
 }
