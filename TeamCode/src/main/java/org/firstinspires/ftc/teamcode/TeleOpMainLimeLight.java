@@ -193,7 +193,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
             //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
             LLResult result = limelight.getLatestResult();
-            shooterSpeed = Math.min(-1050, shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation);
+            shooterSpeed = shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation;
             if (result != null && result.isValid()) {
                 ty = result.getTy();
                 tx = result.getTx();
