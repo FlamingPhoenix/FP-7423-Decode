@@ -95,7 +95,7 @@ public class TeleOpMainLimeLight extends OpMode{
     @Override
     public void init() {
         velocityCompensation = (int) PersistentStorage.loadDouble(this.hardwareMap.appContext,"b",280);
-        velocityMultiplier = (int) PersistentStorage.loadDouble(this.hardwareMap.appContext,"m",2.14);
+        velocityMultiplier = (double) PersistentStorage.loadDouble(this.hardwareMap.appContext,"m",2.14);
         drive = new FieldCentricDrivePinPoint(hardwareMap);
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -304,7 +304,7 @@ public class TeleOpMainLimeLight extends OpMode{
         if(inShoot){
             switch(shootSequenceState) {
                 case 1: // Move linkage to back position and lift back ball
-                    linkage.setPosition(0.3567);  // Move shooter to back position
+                    linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
                     shooter.setVelocity(shooterSpeed);
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                         back.setPosition(0.6); // Push back ball up
@@ -321,7 +321,7 @@ public class TeleOpMainLimeLight extends OpMode{
                             inShoot = false;
                             shootSequenceState = 0;
                         } else { // Continue to middle ball for full sequence
-                            linkage.setPosition(0.18); // Move shooter to middle position
+                            linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
                             shootSequenceTimer.reset();
                             shootSequenceState = 3;
                         }
@@ -330,7 +330,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
 case 3: // Move linkage to middle position  and lift middle ball
                     if(shootMode == 2) { // Middle ball only - need to position linkage first
-                        linkage.setPosition(0.18); // Move shooter to middle position
+                        linkage.setPosition(0.27); // Move shooter to middle position
                         shooter.setVelocity(shooterSpeed);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
@@ -348,7 +348,7 @@ case 3: // Move linkage to middle position  and lift middle ball
                             inShoot = false;
                             shootSequenceState = 0;
                         } else { // Continue to front ball for full sequence
-                            linkage.setPosition(0.0); // Move shooter to front position
+                            linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
                             shootSequenceTimer.reset();
                             shootSequenceState = 5;
                         }
