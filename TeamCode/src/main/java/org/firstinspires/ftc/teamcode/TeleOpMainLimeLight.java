@@ -47,7 +47,7 @@ public class TeleOpMainLimeLight extends OpMode{
     DcMotor intake;
 
 
-    Servo front, back, middle, linkage;
+    Servo front, back, middle, linkage, lock;
     CRServo wheel;
     boolean inShoot = false;
     int shootSequenceState = 0;
@@ -107,6 +107,7 @@ public class TeleOpMainLimeLight extends OpMode{
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
+        lock = hardwareMap.servo.get("lock");
         wheel = hardwareMap.crservo.get("wheel");
         wheel = hardwareMap.crservo.get("wheel");
         try {
@@ -232,6 +233,13 @@ public class TeleOpMainLimeLight extends OpMode{
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.VIOLET);
         } else {
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+        }
+
+        // Lock servo control based on ball detection
+        if (allThreeBallsDetected) {
+            lock.setPosition(0.6);
+        } else {
+            lock.setPosition(0.42);
         }
 
         telemetry.addData("Shooter Velocity (RPM)", shooterSpeed);

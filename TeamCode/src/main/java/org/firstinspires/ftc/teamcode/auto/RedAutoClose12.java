@@ -150,23 +150,21 @@ public class RedAutoClose12 extends OpMode {
               .build();
 
             Path3 = follower.pathBuilder().addPath(
-                new BezierCurve(
+                new BezierLine(
                   new Pose(106.316, 111.408),
-                  new Pose(90.602, 107.453),
-                  new Pose(91.748, 82.750)
+
+                  new Pose(98.000, 59.500)
                 )
               ).setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(180))
-
               .build();
 
             Path4 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(91.748, 82.750),
+                  new Pose(98.000, 59.500),
 
-                  new Pose(123.000, 82.750)
+                  new Pose(125.000, 59.500)
                 )
               ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-
               .build();
 
 
@@ -180,19 +178,19 @@ public class RedAutoClose12 extends OpMode {
               .build();
 
             Path6 = follower.pathBuilder().addPath(
-                new BezierLine(
+                new BezierCurve(
                   new Pose(109.000, 103.000),
-
-                  new Pose(98.000, 59.500)
+                  new Pose(90.602, 107.453),
+                  new Pose(91.748, 82.750)
                 )
               ).setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(180))
               .build();
 
             Path7 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(98.000, 59.500),
+                                    new Pose(91.748, 82.750),
 
-                                    new Pose(125.000, 59.500)
+                                    new Pose(123.000, 82.750)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                     .build();
