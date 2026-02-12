@@ -8,6 +8,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -33,18 +34,20 @@ public class TeleOpMainLimeLight extends OpMode{
     public static double KF = 17.2;
     public static double alignkp = -0.06;
     public static double strafeMultiplier = 0.7; // multiplier for diagonal strafe during auto-align
+    public static double targetOffset = 0.0; // degrees offset for goal center alignment
     public static double ball1mult = 1;
     public static double ball2mult = 1;
     public static double ball3mult = 1;
     //THE REST
     RevBlinkinLedDriver blinkin;
+    ColorSensor middlec, backc, frontc;
     //private int maxTPS = 28 * 4000; // 4000 RPM with 28 ticks per revolution (for 6000 rpm motor)
     FieldCentricDrivePinPoint drive;
     DcMotorEx shooter;
     DcMotor intake;
 
 
-    Servo front, back, middle, linkage;
+    Servo front, back, middle, linkage, lock;
     CRServo wheel;
     boolean inShoot = false;
     int shootSequenceState = 0;
@@ -67,6 +70,28 @@ public class TeleOpMainLimeLight extends OpMode{
 
 
     boolean lastUp, lastDown, lastLeft, lastRight = false;
+
+    private enum BallColor {
+        GREEN, PURPLE, UNKNOWN
+    }
+
+    private BallColor detectBallColor(ColorSensor sensor) {
+        int red = sensor.red();
+        int green = sensor.green();
+        int blue = sensor.blue();
+
+        // Green ball detection: high green, lower red and blue
+        if (green > red && green > blue && green > 100) {
+            return BallColor.GREEN;
+        }
+        // Purple ball detection: high red and blue, lower green
+        else if ((red + blue) > (2 * green) && red > 80 && blue > 80) {
+            return BallColor.PURPLE;
+        }
+
+        return BallColor.UNKNOWN;
+    }
+
     @Override
     public void init() {
         velocityCompensation = (int) PersistentStorage.loadDouble(this.hardwareMap.appContext,"b",280);
@@ -74,11 +99,15 @@ public class TeleOpMainLimeLight extends OpMode{
         drive = new FieldCentricDrivePinPoint(hardwareMap);
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
-//        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        middlec = hardwareMap.get(ColorSensor.class, "middlec");
+        backc = hardwareMap.get(ColorSensor.class, "backc");
+        frontc = hardwareMap.get(ColorSensor.class, "frontc");
         front = hardwareMap.servo.get("front");
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
+        lock = hardwareMap.servo.get("lock");
         wheel = hardwareMap.crservo.get("wheel");
         wheel = hardwareMap.crservo.get("wheel");
         try {
@@ -91,6 +120,7 @@ public class TeleOpMainLimeLight extends OpMode{
             limeLightWorking = false;
         }
         autoAligner = new AutoAlign(drive,alignkp,strafeMultiplier);
+        autoAligner.setTargetOffset(targetOffset);
         shooterCalculator = new ShootCalculator(); // height of shooter from ground in inches
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -164,7 +194,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
             //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
             LLResult result = limelight.getLatestResult();
-            shooterSpeed = Math.min(-1050, shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation);
+            shooterSpeed = shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation;
             if (result != null && result.isValid()) {
                 ty = result.getTy();
                 tx = result.getTx();
@@ -186,7 +216,37 @@ public class TeleOpMainLimeLight extends OpMode{
 
         }
 
+        // Color detection logic
+        BallColor middleColor = detectBallColor(middlec);
+        BallColor backColor = detectBallColor(backc);
+        BallColor frontColor = detectBallColor(frontc);
+
+        // Check if all three sensors detect balls (any color)
+        boolean allThreeBallsDetected = (middleColor == BallColor.GREEN || middleColor == BallColor.PURPLE) &&
+                                       (backColor == BallColor.GREEN || backColor == BallColor.PURPLE) &&
+                                       (frontColor == BallColor.GREEN || frontColor == BallColor.PURPLE);
+
+        // Set LED color based on sensor readings
+        if (middleColor == BallColor.GREEN && backColor == BallColor.GREEN && frontColor == BallColor.GREEN) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        } else if (middleColor == BallColor.PURPLE && backColor == BallColor.PURPLE && frontColor == BallColor.PURPLE) {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.VIOLET);
+        } else {
+            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+        }
+
+        // Lock servo control based on ball detection
+        if (allThreeBallsDetected) {
+            lock.setPosition(0.6);
+        } else {
+            lock.setPosition(0.42);
+        }
+
         telemetry.addData("Shooter Velocity (RPM)", shooterSpeed);
+        telemetry.addData("Middle Sensor", middleColor);
+        telemetry.addData("Back Sensor", backColor);
+        telemetry.addData("Front Sensor", frontColor);
+        telemetry.addData("All Three Balls Detected", allThreeBallsDetected);
 
         // Add telemetry for debugging drive issues
         telemetry.addData("IMU Heading (deg)", Math.toDegrees(drive.getHeading()));
@@ -225,7 +285,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
         // Shooter controls (only when not in sequence)
         if(!inShoot) {
-            if(gamepad1.right_bumper || gamepad2.right_bumper) {
+            if(gamepad1.right_bumper || gamepad2.right_bumper || allThreeBallsDetected) {
                 shooter.setVelocity(shooterSpeed);
             } else {
                 shooter.setPower(0);
@@ -335,7 +395,7 @@ case 3: // Move linkage to middle position  and lift middle ball
             drive.drive(gamepad1, exp);
         }
         else{
-            autoAligner.alignToTargetWithManualDrive(tx,gamepad1.left_stick_y,-gamepad1.left_stick_x*1.1); // Uses diagonal approach for 45-degree alignment
+            autoAligner.alignToTargetWithManualDrive(tx,gamepad1.left_stick_y,-gamepad1.left_stick_x*1.1);
         }
 
         //endgame notifi
