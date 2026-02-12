@@ -31,7 +31,7 @@ public class TeleOpMainLimeLight extends OpMode{
     public static double KP = 60;
     public static double KI = 0;
     public static double KD = 0.2;
-    public static double KF = 17.2;
+    public static double KF = 15;
     public static double alignkp = -0.06;
     public static double strafeMultiplier = 0.7; // multiplier for diagonal strafe during auto-align
     public static double targetOffset = 0.0; // degrees offset for goal center alignment
@@ -66,6 +66,8 @@ public class TeleOpMainLimeLight extends OpMode{
     double multiplierCompensation = 1.0;
     ElapsedTime gametimer = new ElapsedTime();
     boolean isEndGame = false;
+    boolean lockActivated = false; // Track if lock has been activated
+    boolean shooterAutoActive = false; // Track if shooter should be auto-powered
 
 
 
@@ -226,6 +228,11 @@ public class TeleOpMainLimeLight extends OpMode{
                                        (backColor == BallColor.GREEN || backColor == BallColor.PURPLE) &&
                                        (frontColor == BallColor.GREEN || frontColor == BallColor.PURPLE);
 
+        // Check if no balls are detected
+        boolean noBallsDetected = (middleColor == BallColor.UNKNOWN) &&
+                                 (backColor == BallColor.UNKNOWN) &&
+                                 (frontColor == BallColor.UNKNOWN);
+
         // Set LED color based on sensor readings
         if (middleColor == BallColor.GREEN && backColor == BallColor.GREEN && frontColor == BallColor.GREEN) {
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
@@ -235,11 +242,24 @@ public class TeleOpMainLimeLight extends OpMode{
             blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
         }
 
-        // Lock servo control based on ball detection
+        // Lock servo control with sticky behavior
         if (allThreeBallsDetected) {
+            lockActivated = true;
+        } else if (noBallsDetected) {
+            lockActivated = false;
+        }
+
+        if (lockActivated) {
             lock.setPosition(0.6);
         } else {
             lock.setPosition(0.42);
+        }
+
+        // Shooter auto control with sticky behavior - similar to lock
+        if (allThreeBallsDetected) {
+            shooterAutoActive = true;
+        } else if (noBallsDetected) {
+            shooterAutoActive = false;
         }
 
         telemetry.addData("Shooter Velocity (RPM)", shooterSpeed);
@@ -285,7 +305,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
         // Shooter controls (only when not in sequence)
         if(!inShoot) {
-            if(gamepad1.right_bumper || gamepad2.right_bumper || allThreeBallsDetected) {
+            if(gamepad1.right_bumper || gamepad2.right_bumper || shooterAutoActive) {
                 shooter.setVelocity(shooterSpeed);
             } else {
                 shooter.setPower(0);
@@ -338,7 +358,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
 case 3: // Move linkage to middle position  and lift middle ball
                     if(shootMode == 2) { // Middle ball only - need to position linkage first
-                        linkage.setPosition(0.27); // Move shooter to middle position
+                        linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
                         shooter.setVelocity(shooterSpeed);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
@@ -376,7 +396,7 @@ case 3: // Move linkage to middle position  and lift middle ball
                     break;
 
                 case 6: // End sequence
-                    if(shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
+                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
                         front.setPosition(0); // Reset front servo
                         shooter.setPower(0);
                         inShoot = false;

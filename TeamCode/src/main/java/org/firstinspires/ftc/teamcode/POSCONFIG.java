@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 public class POSCONFIG {
-    public static final double FRONT = 0.3872;
+    public static final double FRONT = 0.3994;
     public static final double BACK = 0.0539;
-    public static final double MIDDLE = 0.2728;
+    public static final double MIDDLE = 0.2;
     //positions for the tapes on the field for intake
     //TODO: Anshul find these values and implement into your autonomous
     //public static final double TAPE1RED =
