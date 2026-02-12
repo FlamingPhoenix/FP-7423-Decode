@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 @TeleOp
 public class FindServoPosition extends OpMode {
-    String[] servoNames ={"linkage","front","back","middle"};
+    String[] servoNames ={"linkage","front","back","middle","lock"};
     Servo[] servos = {};
     int selectedServo = 0;
     int incrementMultiplier = 1;
@@ -29,6 +29,8 @@ public class FindServoPosition extends OpMode {
     }
     @Override
     public void loop() {
+        boolean anyPressed = gamepad1.dpad_right || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_down || Math.abs(gamepad1.left_stick_y) > 0.1;
+
         if(gamepad1.right_bumper){
             incrementMultiplier = 10;
         }
@@ -42,10 +44,10 @@ public class FindServoPosition extends OpMode {
             selectedServo = (selectedServo - 1) % (servos.length);
             didchange = true;
         }else if(gamepad1.dpad_up && !didchange){
-            servos[selectedServo].setPosition(servos[selectedServo].getPosition() + 0.001*incrementMultiplier);
+            servos[selectedServo].setPosition(servos[selectedServo].getPosition() + 0.01*incrementMultiplier);
             didchange = true;
         }else if(gamepad1.dpad_down && !didchange){
-            servos[selectedServo].setPosition(servos[selectedServo].getPosition() - 0.001*incrementMultiplier);
+            servos[selectedServo].setPosition(servos[selectedServo].getPosition() - 0.01*incrementMultiplier);
             didchange = true;
         }else if(gamepad1.left_stick_y > 0.1 && !didchange){
             servos[selectedServo].setPosition(servos[selectedServo].getPosition() + 0.1);
@@ -53,7 +55,8 @@ public class FindServoPosition extends OpMode {
         }else if(gamepad1.left_stick_y < -0.1 && !didchange) {
             servos[selectedServo].setPosition(servos[selectedServo].getPosition() - 0.1);
             didchange = true;
-        } else{
+        } else if (!anyPressed) {
+            // Only reset when all buttons/sticks are released
             didchange = false;
         }
         for(int i = 0; i < servos.length; i++){
