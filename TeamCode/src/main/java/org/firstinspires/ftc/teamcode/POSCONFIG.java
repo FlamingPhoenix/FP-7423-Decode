@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.configurables.annotations.Configurable;
+
+@Configurable
 public class POSCONFIG {
-    public static final double FRONT = 0.3994;
-    public static final double BACK = 0.0539;
-    public static final double MIDDLE = 0.2;
+    public static  double FRONT = 0.3994;
+    public static  double BACK = 0.0539;
+    public static  double MIDDLE = 0.24;
     //positions for the tapes on the field for intake
     //TODO: Anshul find these values and implement into your autonomous
     //public static final double TAPE1RED =

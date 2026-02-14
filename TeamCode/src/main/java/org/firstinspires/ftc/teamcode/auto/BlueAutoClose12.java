@@ -145,7 +145,7 @@ public class BlueAutoClose12 extends OpMode {
 
                   new Pose(38.000, 111.408)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(144))
+              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(120))
 
               .build();
 
@@ -155,27 +155,40 @@ public class BlueAutoClose12 extends OpMode {
                   new Pose(54.000, 107.453),
                   new Pose(52.252, 90.750)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(144), Math.toRadians(0))
+              ).setLinearHeadingInterpolation(Math.toRadians(120), Math.toRadians(0))
 
               .build();
 
-            Path4 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(52.252, 90.750),
+//            Path4 = follower.pathBuilder().addPath(
+//                new BezierLine(
+//                  new Pose(52.252, 90.750),
+//
+//                  new Pose(21.000, 90.750)
+//                )
+//              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+//
+//              .build();
+            Path4 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(52.252, 90.750),
+                                    new Pose(4.745, 94.181),
+                                    new Pose(32.97528830313015, 80.42174629324546),
+                                    new Pose(18.067, 78.305)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                    .build();
 
-                  new Pose(21.000, 90.750)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
-
-              .build();
 
             Path5 = follower.pathBuilder().addPath(
                 new BezierLine(
-                  new Pose(21.000, 90.750),
+                        new Pose(18.067, 78.305),
 
-                  new Pose(35.000, 103.000)
+                        new Pose(35.000, 103.000)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(133))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(118))
 
               .build();
 
@@ -185,7 +198,7 @@ public class BlueAutoClose12 extends OpMode {
 
                   new Pose(46.000, 67.500)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(133), Math.toRadians(0))
+              ).setLinearHeadingInterpolation(Math.toRadians(118), Math.toRadians(0))
 
               .build();
 
@@ -205,7 +218,7 @@ public class BlueAutoClose12 extends OpMode {
                   new Pose(42.000, 78.155),
                   new Pose(35.000, 103.000)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(131))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(118))
 
               .build();
 
@@ -235,7 +248,7 @@ public class BlueAutoClose12 extends OpMode {
 
                   new Pose(38.720, 98.842)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(133))
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(118))
 
               .build();
 
@@ -245,7 +258,7 @@ public class BlueAutoClose12 extends OpMode {
 
                   new Pose(29, 82.750)
                 )
-              ).setLinearHeadingInterpolation(Math.toRadians(133), Math.toRadians(180))
+              ).setLinearHeadingInterpolation(Math.toRadians(118), Math.toRadians(180))
 
               .build();
         }
@@ -568,7 +581,7 @@ public class BlueAutoClose12 extends OpMode {
             case 1: // Move linkage to back position and lift back ball
                 linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
                 shooter.setVelocity(shooterSpeed);
-                if (shootSequenceTimer.milliseconds() > 400) { // Wait for linkage to move
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                     back.setPosition(0.6); // Push back ball up
                     shootSequenceTimer.reset();
                     shootSequenceState = 2;
@@ -576,7 +589,7 @@ public class BlueAutoClose12 extends OpMode {
                 break;
 
             case 2: // Wait then reset back servo and move to middle
-                if (shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
+                if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
                     back.setPosition(0); // Reset back servo
                     linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
                     shootSequenceTimer.reset();
@@ -585,7 +598,7 @@ public class BlueAutoClose12 extends OpMode {
                 break;
 
             case 3: // Move linkage to middle position and lift middle ball
-                if (shootSequenceTimer.milliseconds() > 400) { // Wait for linkage to move
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                     middle.setPosition(0.7); // Push middle ball up
                     shootSequenceTimer.reset();
                     shootSequenceState = 4;
@@ -593,7 +606,7 @@ public class BlueAutoClose12 extends OpMode {
                 break;
 
             case 4: // Wait then reset middle servo and move to front
-                if (shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
+                if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
                     middle.setPosition(0); // Reset middle servo
                     linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
                     shootSequenceTimer.reset();
@@ -602,7 +615,7 @@ public class BlueAutoClose12 extends OpMode {
                 break;
 
             case 5: // Move linkage to front position and lift front ball
-                if (shootSequenceTimer.milliseconds() > 400) { // Wait for linkage to move
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                     front.setPosition(0.6); // Push front ball up
                     shootSequenceTimer.reset();
                     shootSequenceState = 6;
