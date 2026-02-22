@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.utility;
+
+import org.firstinspires.ftc.teamcode.POSCONFIG;
 
 public enum POS {
     FRONT(POSCONFIG.FRONT,2),

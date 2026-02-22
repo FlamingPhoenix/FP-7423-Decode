@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Color;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -42,6 +44,9 @@ public class TeleOpMain extends OpMode {
     //modules
     ShootCalculator shootCalculator;
     AutoAlign autoAligner;
+    ColorHandler colorHandler;
+    ShootQueue shootQueue;
+
 
 
     //variables
@@ -54,8 +59,38 @@ public class TeleOpMain extends OpMode {
 
     @Override
     public void loop() {
+        // handle user input
+            //shooter adjustment control
+            //multiplier control
+            //intake control
+            //auto align control
+        //shooting control
+            //select pattern
+            //cancel pattern
+            //manual pattern
+            //lock override control
 
 
+
+        //handle limelight
+        //handle shooter speed
+
+
+
+        //handle color sensor and shoot queue -> should run ONCE each time before shooting a new cycle.
+        //BallOrder ballOrder = colorHandler.detectBallOrder();
+        //Queue<POS> shootSequence = ballOrder.findOptimalOrder(shootCalculator.calculateTargetOrder());
+        //shootQueue.setQueue(shootSequence);
+
+
+        //update shootQueue
+        //shootQueue.update();
+
+
+        //update drive
         drive.drive(gamepad1, multiplier);
+
+        //telemetry
+        telemetry.addData("heading", drive.getHeading());
     }
 }

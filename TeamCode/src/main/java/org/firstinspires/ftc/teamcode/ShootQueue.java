@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utility.POS;
+
 import java.util.ArrayDeque;
 import java.util.Queue;
 
@@ -61,6 +63,9 @@ public class ShootQueue {
     public void clearAndReset() {
         queue.clear();
         queue.add(POS.RESET);
+    }
+    public void setQueue(Queue<POS> newQueue) {
+        queue = newQueue;
     }
 
     /**
