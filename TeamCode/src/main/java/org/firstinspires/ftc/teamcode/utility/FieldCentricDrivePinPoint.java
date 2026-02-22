@@ -24,6 +24,7 @@ public class FieldCentricDrivePinPoint {
     DcMotor fl, fr, bl, br;
     IMU imu;
     boolean useIMU = true;
+    double IMUOffset = 0.0;
     double heading;
     double multiplier = 0.8;
     double lastHeading = 0;
@@ -84,7 +85,7 @@ public class FieldCentricDrivePinPoint {
         double botHeading;
         if(useIMU) {
 //            botHeading= -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);//might be degrees
-            botHeading = -pinpointLocalizer.getPose().getHeading();
+            botHeading = -getHeading();
         }
         else{
             botHeading = heading;
@@ -115,9 +116,12 @@ public class FieldCentricDrivePinPoint {
         double x = applyDeadzone(-gamepad1.left_stick_x*1.1);
         double y = applyDeadzone(gamepad1.left_stick_y);
         double rx = applyDeadzone(-0.65*gamepad1.right_stick_x);
+        if(gamepad1.x){
+            resetIMU();
+        }
         double botHeading;
         if(useIMU) {
-            botHeading = -pinpointLocalizer.getPose().getHeading();
+            botHeading = -getHeading();
         }
         else{
             botHeading = heading;
@@ -144,20 +148,7 @@ public class FieldCentricDrivePinPoint {
      */
     public double getHeading(){
         if(useIMU) {
-            return pinpointLocalizer.getPose().getHeading();
-        }
-        else{
-            return heading;
-        }
-    }
-    /**
-     * Get robot heading in a specified angle unit
-     * @param angleUnit angle unit to return heading in
-     * @return robot heading
-     */
-    public double getHeading(AngleUnit angleUnit){
-        if(useIMU) {
-            return imu.getRobotYawPitchRollAngles().getYaw(angleUnit);
+            return pinpointLocalizer.getPose().getHeading() - IMUOffset;
         }
         else{
             return heading;
@@ -166,9 +157,17 @@ public class FieldCentricDrivePinPoint {
     /**
     * Reset the IMU
     */
+//    public void resetIMU(){
+//        if(useIMU) {
+//            pinpointLocalizer.resetIMU();
+//        }
+//    }
+//    Unreliable because pinpoint reset imu while moving can cause drift
+    // take the current heading and set it as the new heading, effectively resetting the heading to 0 without actually resetting the IMU
     public void resetIMU(){
         if(useIMU) {
-            pinpointLocalizer.resetIMU();
+            double currentHeading = pinpointLocalizer.getPose().getHeading();
+            IMUOffset += currentHeading;
         }
     }
     /**

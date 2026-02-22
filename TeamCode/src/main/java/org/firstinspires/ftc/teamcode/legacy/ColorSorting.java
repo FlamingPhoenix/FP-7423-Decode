@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.legacy;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
-import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 public class ColorSorting {
     HardwareMap hwmap;
     NormalizedColorSensor col1,col2,col3;

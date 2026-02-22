@@ -21,7 +21,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
-import org.firstinspires.ftc.teamcode.POSCONFIG;
+import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "Red Auto Close 12", group = "Autonomous")
@@ -122,7 +122,7 @@ public class RedAutoClose12 extends OpMode {
     @Override
     public void start() {
         shooter.setVelocity(-1100); // Start shooter with -1100 speed for first ball
-        linkage.setPosition(POSCONFIG.FRONT); // Move linkage to first ball (back) position immediately
+        linkage.setPosition(POSCONFIG_OLD.FRONT); // Move linkage to first ball (back) position immediately
         setPathState(0);
     }
 
@@ -572,7 +572,7 @@ public class RedAutoClose12 extends OpMode {
     public void updateNormalShootingSequence() {
         switch (shootSequenceState) {
             case 1: // Move linkage to back position and lift back ball
-                linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
+                linkage.setPosition(POSCONFIG_OLD.FRONT);  // Move shooter to back position
                 shooter.setVelocity(shooterSpeed);
                 if (shootSequenceTimer.milliseconds() > 400) { // Wait for linkage to move
                     back.setPosition(0.6); // Push back ball up
@@ -584,7 +584,7 @@ public class RedAutoClose12 extends OpMode {
             case 2: // Wait then reset back servo and move to middle
                 if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
                     back.setPosition(0); // Reset back servo
-                    linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
+                    linkage.setPosition(POSCONFIG_OLD.MIDDLE); // Move shooter to middle position
                     shootSequenceTimer.reset();
                     shootSequenceState = 3;
                 }
@@ -601,7 +601,7 @@ public class RedAutoClose12 extends OpMode {
             case 4: // Wait then reset middle servo and move to front
                 if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
                     middle.setPosition(0); // Reset middle servo
-                    linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
+                    linkage.setPosition(POSCONFIG_OLD.BACK); // Move shooter to front position
                     shootSequenceTimer.reset();
                     shootSequenceState = 5;
                 }

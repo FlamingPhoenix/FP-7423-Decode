@@ -21,7 +21,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
-import org.firstinspires.ftc.teamcode.POSCONFIG;
+import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "Blue Auto Close 12", group = "Autonomous")
@@ -121,7 +121,7 @@ public class BlueAutoClose12 extends OpMode {
     @Override
     public void start() {
         shooter.setVelocity(-1100); // Start shooter with -1100 speed for first ball
-        linkage.setPosition(POSCONFIG.FRONT); // Move linkage to first ball (back) position immediately
+        linkage.setPosition(POSCONFIG_OLD.FRONT); // Move linkage to first ball (back) position immediately
         setPathState(0);
     }
 
@@ -579,7 +579,7 @@ public class BlueAutoClose12 extends OpMode {
     public void updateNormalShootingSequence() {
         switch (shootSequenceState) {
             case 1: // Move linkage to back position and lift back ball
-                linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
+                linkage.setPosition(POSCONFIG_OLD.FRONT);  // Move shooter to back position
                 shooter.setVelocity(shooterSpeed);
                 if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                     back.setPosition(0.6); // Push back ball up
@@ -591,7 +591,7 @@ public class BlueAutoClose12 extends OpMode {
             case 2: // Wait then reset back servo and move to middle
                 if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
                     back.setPosition(0); // Reset back servo
-                    linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
+                    linkage.setPosition(POSCONFIG_OLD.MIDDLE); // Move shooter to middle position
                     shootSequenceTimer.reset();
                     shootSequenceState = 3;
                 }
@@ -608,7 +608,7 @@ public class BlueAutoClose12 extends OpMode {
             case 4: // Wait then reset middle servo and move to front
                 if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
                     middle.setPosition(0); // Reset middle servo
-                    linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
+                    linkage.setPosition(POSCONFIG_OLD.BACK); // Move shooter to front position
                     shootSequenceTimer.reset();
                     shootSequenceState = 5;
                 }
@@ -645,7 +645,7 @@ public class BlueAutoClose12 extends OpMode {
     public void updateReverseShootingSequence() {
         switch (shootSequenceState) {
             case 5: // Start with front ball (state 5 for consistency)
-                linkage.setPosition(POSCONFIG.BACK);  // Move shooter to front position
+                linkage.setPosition(POSCONFIG_OLD.BACK);  // Move shooter to front position
                 shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
                 if (shootSequenceTimer.milliseconds() > 1000) { // Longer wait for linkage to move
                     front.setPosition(0.6); // Push front ball up
@@ -657,7 +657,7 @@ public class BlueAutoClose12 extends OpMode {
             case 6: // Wait then reset front servo and move to middle
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     front.setPosition(0); // Reset front servo
-                    linkage.setPosition(POSCONFIG.MIDDLE);// Move shooter to middle position
+                    linkage.setPosition(POSCONFIG_OLD.MIDDLE);// Move shooter to middle position
                     shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
                     shootSequenceTimer.reset();
                     shootSequenceState = 3;
@@ -675,7 +675,7 @@ public class BlueAutoClose12 extends OpMode {
             case 4: // Wait then reset middle servo and move to back
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     middle.setPosition(0); // Keep middle servo up
-                    linkage.setPosition(POSCONFIG.FRONT); // Move shooter to back position
+                    linkage.setPosition(POSCONFIG_OLD.FRONT); // Move shooter to back position
                     shootSequenceTimer.reset();
                     shootSequenceState = 1;
                 }
@@ -712,7 +712,7 @@ public class BlueAutoClose12 extends OpMode {
     public void updateCustomShootingSequence() {
         switch (shootSequenceState) {
             case 1: // Start with back ball
-                linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
+                linkage.setPosition(POSCONFIG_OLD.FRONT);  // Move shooter to back position
                 shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
                 if (shootSequenceTimer.milliseconds() > 1000) { // Longer wait for linkage to move
                     back.setPosition(0.6); // Push back ball up
@@ -724,7 +724,7 @@ public class BlueAutoClose12 extends OpMode {
             case 2: // Wait then reset back servo and move to front
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     back.setPosition(0); // Reset back servo
-                    linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
+                    linkage.setPosition(POSCONFIG_OLD.BACK); // Move shooter to front position
                     shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
                     shootSequenceTimer.reset();
                     shootSequenceState = 5;
@@ -742,7 +742,7 @@ public class BlueAutoClose12 extends OpMode {
             case 6: // Wait then reset front servo and move to middle
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     front.setPosition(0); // Reset front servo
-                    linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
+                    linkage.setPosition(POSCONFIG_OLD.MIDDLE); // Move shooter to middle position
                     shootSequenceTimer.reset();
                     shootSequenceState = 3;
                 }
@@ -779,7 +779,7 @@ public class BlueAutoClose12 extends OpMode {
     public void updateNewCustomShootingSequence() {
         switch (shootSequenceState) {
             case 5: // Start with front ball
-                linkage.setPosition(POSCONFIG.BACK);  // Move shooter to front position
+                linkage.setPosition(POSCONFIG_OLD.BACK);  // Move shooter to front position
                 shooter.setVelocity(firstBallSpeed); // Use slower speed for first ball
                 if (shootSequenceTimer.milliseconds() > 1000) { // Longer wait for linkage to move
                     front.setPosition(0.6); // Push front ball up
@@ -791,7 +791,7 @@ public class BlueAutoClose12 extends OpMode {
             case 6: // Wait then reset front servo and move to back
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     front.setPosition(0); // Reset front servo
-                    linkage.setPosition(POSCONFIG.FRONT); // Move shooter to back position
+                    linkage.setPosition(POSCONFIG_OLD.FRONT); // Move shooter to back position
                     shooter.setVelocity(shooterSpeed); // Switch to normal speed for remaining balls
                     shootSequenceTimer.reset();
                     shootSequenceState = 1;
@@ -809,7 +809,7 @@ public class BlueAutoClose12 extends OpMode {
             case 2: // Wait then reset back servo and move to middle
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     back.setPosition(0); // Reset back servo
-                    linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
+                    linkage.setPosition(POSCONFIG_OLD.MIDDLE); // Move shooter to middle position
                     shootSequenceTimer.reset();
                     shootSequenceState = 3;
                 }

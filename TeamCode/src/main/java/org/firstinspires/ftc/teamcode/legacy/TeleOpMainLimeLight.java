@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.legacy;
 
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
-import org.firstinspires.ftc.teamcode.shooter.LimeLightLocator;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
@@ -332,7 +331,7 @@ public class TeleOpMainLimeLight extends OpMode{
         if(inShoot){
             switch(shootSequenceState) {
                 case 1: // Move linkage to back position and lift back ball
-                    linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
+                    linkage.setPosition(POSCONFIG_OLD.FRONT);  // Move shooter to back position
                     shooter.setVelocity(shooterSpeed);
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
                         back.setPosition(0.6); // Push back ball up
@@ -349,7 +348,7 @@ public class TeleOpMainLimeLight extends OpMode{
                             inShoot = false;
                             shootSequenceState = 0;
                         } else { // Continue to middle ball for full sequence
-                            linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
+                            linkage.setPosition(POSCONFIG_OLD.MIDDLE); // Move shooter to middle position
                             shootSequenceTimer.reset();
                             shootSequenceState = 3;
                         }
@@ -358,7 +357,7 @@ public class TeleOpMainLimeLight extends OpMode{
 
 case 3: // Move linkage to middle position  and lift middle ball
                     if(shootMode == 2) { // Middle ball only - need to position linkage first
-                        linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
+                        linkage.setPosition(POSCONFIG_OLD.MIDDLE); // Move shooter to middle position
                         shooter.setVelocity(shooterSpeed);
                     }
                     if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
@@ -376,7 +375,7 @@ case 3: // Move linkage to middle position  and lift middle ball
                             inShoot = false;
                             shootSequenceState = 0;
                         } else { // Continue to front ball for full sequence
-                            linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
+                            linkage.setPosition(POSCONFIG_OLD.BACK); // Move shooter to front position
                             shootSequenceTimer.reset();
                             shootSequenceState = 5;
                         }
