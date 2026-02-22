@@ -52,6 +52,17 @@ public class ShootQueue {
 
     }
 
+    /** * Call this to clear the shoot queue. Useful for canceling shots or resetting state
+     *
+     */
+    public void clearQueue() {
+        queue.clear();
+    }
+    public void clearAndReset() {
+        queue.clear();
+        queue.add(POS.RESET);
+    }
+
     /**
      * Call this every loop to process the queue
      */
@@ -157,6 +168,11 @@ public class ShootQueue {
 
     public boolean isShooting() {
         return state != 0;
+    }
+
+
+    public POS getCurrentPos() {
+        return currentPos;
     }
 
 }
