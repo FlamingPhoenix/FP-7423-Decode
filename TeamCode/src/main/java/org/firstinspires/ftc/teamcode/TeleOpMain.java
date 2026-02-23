@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -13,7 +11,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
+import org.firstinspires.ftc.teamcode.utility.ColorHandler;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
+import org.firstinspires.ftc.teamcode.utility.LEDHandler;
+import org.firstinspires.ftc.teamcode.utility.PersistentConstants;
+import org.firstinspires.ftc.teamcode.utility.STATE;
 
 @Configurable
 @TeleOp
@@ -46,49 +48,107 @@ public class TeleOpMain extends OpMode {
     AutoAlign autoAligner;
     ColorHandler colorHandler;
     ShootQueue shootQueue;
+    PersistentConstants pc;
+    LEDHandler ledHandler;
 
 
 
     //variables
     double multiplier = 1.0;
+    STATE currentState = STATE.IDLE;
 
     @Override
     public void init() {
+        //hardware init
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        intake = hardwareMap.get(DcMotor.class, "intake");
+
+        /*
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+            limelight.setPollRateHz(100);
+            limelight.start();
+            limelight.pipelineSwitch(0);
+         */
+
+        //modules init
         drive = new FieldCentricDrivePinPoint(hardwareMap, true);
+        pc = new PersistentConstants(this.hardwareMap.appContext);
+        shootCalculator = new ShootCalculator(30,4,72); // TODO: set angle + elevation
+            velocityCompensation = pc.getb();
+            velocityMultiplier = pc.getm();
+            shootCalculator.setVelocityMultiplier(velocityMultiplier);
+            shootCalculator.setVelocityCompensation(velocityCompensation);
+        /*
+        shootQueue = new ShootQueue(hardwareMap);
+        colorHandler = new ColorHandler(hardwareMap);
+        ledHandler = new LEDHandler(hardwareMap);
+            ledHandler.setALLColor(LEDHandler.LED_BLUE);
+            ledHandler.setColorsFromStatic();
+         */
     }
 
     @Override
     public void loop() {
+        //CONTROL SCHEME:
+        //gamepad 1: drive + intake control + currentState override
+        //gamepad 2: shooter control - colors/positions;
+
+
+        //pc.update(gamepad2);
         // handle user input
             //shooter adjustment control
             //multiplier control
             //intake control
             //auto align control
-        //shooting control
-            //select pattern
-            //cancel pattern
-            //manual pattern
             //lock override control
-
-
 
         //handle limelight
         //handle shooter speed
 
+        switch (currentState) {
+            case INTAKING:
+                //run intake until 3 balls are detected
+                //once all 3 detected (or manual override) clear all shoot queue and move to READY
+                //shootQueue.clearQueue();
+                //BallOrder ballOrder = colorHandler.detectBallOrder();
+                //ledHandler.ballColors(ballOrder);
+                break;
+            case READY:
+                //engage lock
+                //set LED colors to match ball order
+                //controller inputs shooting order; either manual position or color order based.
+                //waits until controller selects shoot and then moves to SHOOTING
+                //start revving up the shooter?
+                break;
+            case CALCULATING:
+                // finds optimal shooting order; immediately moves to SHOOTING
+                // LEDS set to reflect shooting (automatically done in findOptimalOrder())
+                //Queue<POS> shootSequence = ballOrder.findOptimalOrder(shootCalculator.calculateTargetOrder());
+                //shootQueue.setQueue(shootSequence);
+                currentState = STATE.SHOOTING;
+                break;
+            case SHOOTING:
+                //handle shoot queue
+                //shootQueue.update();
+                //once shootqueue.ishooting() is false, move to IDLE
+//                if(!shootQueue.isShooting()){
+//                    currentState = STATE.IDLE;
+//                }
+                break;
+            case IDLE:
+                //disengage lock
+                //do nothing - before teleop starts or just driving around
+                //wait until controller starts intake and then move to INTAKING
+                break;
+        }
 
 
-        //handle color sensor and shoot queue -> should run ONCE each time before shooting a new cycle.
-        //BallOrder ballOrder = colorHandler.detectBallOrder();
-        //Queue<POS> shootSequence = ballOrder.findOptimalOrder(shootCalculator.calculateTargetOrder());
-        //shootQueue.setQueue(shootSequence);
 
 
-        //update shootQueue
-        //shootQueue.update();
 
-        //update LEDs based on color sensor
-        //colorHandler.updateLEDs();
 
+        //update LEDs
+        //ledHandler.setColorsFromStatic();
 
         //update drive
         drive.drive(gamepad1, multiplier);

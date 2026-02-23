@@ -170,7 +170,7 @@ public class ShootQueue {
                         back.setPosition(pos);
                         break;
                 }
-                LEDHandler.led1Color = LEDHandler.LED_WHITE;
+                LEDHandler.led1Color = LEDHandler.LED_BLUE; // success
                 state = 0; // Move back to idle to check for next ball
                 break;
 
@@ -185,7 +185,7 @@ public class ShootQueue {
     }
 
     public boolean isShooting() {
-        return state != 0;
+        return state != 0 || !queue.isEmpty(); // as long as we are not idle or there are still balls in the queue, we are shooting
     }
 
 

@@ -1,10 +1,7 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.utility;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import org.firstinspires.ftc.teamcode.utility.BallColor;
-import org.firstinspires.ftc.teamcode.utility.BallOrder;
 
 public class ColorHandler {
     ColorSensor backc, middlec, frontc;
