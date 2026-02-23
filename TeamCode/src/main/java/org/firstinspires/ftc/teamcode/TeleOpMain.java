@@ -86,6 +86,9 @@ public class TeleOpMain extends OpMode {
         //update shootQueue
         //shootQueue.update();
 
+        //update LEDs based on color sensor
+        //colorHandler.updateLEDs();
+
 
         //update drive
         drive.drive(gamepad1, multiplier);

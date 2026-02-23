@@ -4,16 +4,21 @@ import static org.firstinspires.ftc.teamcode.POSCONFIG.LIFTERDOWN;
 import static org.firstinspires.ftc.teamcode.POSCONFIG.LIFTERBLOCKING;
 import static org.firstinspires.ftc.teamcode.POSCONFIG.LIFTERUP;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 import org.firstinspires.ftc.teamcode.utility.POS;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 
+@Configurable
 public class ShootQueue {
+    public static boolean USE_LED = false;
     Servo back, middle, front, lock, linkage;
     ElapsedTime timer = new ElapsedTime();
     Queue<POS> queue = new ArrayDeque<>();
@@ -26,6 +31,13 @@ public class ShootQueue {
     public boolean lockOverridden = false; // If true, lock will not engage and will stay disengaged
 
     public ShootQueue(HardwareMap hardwareMap) {
+        back = hardwareMap.servo.get("back");
+        middle = hardwareMap.servo.get("middle");
+        front = hardwareMap.servo.get("front");
+        lock = hardwareMap.servo.get("lock");
+        linkage = hardwareMap.servo.get("linkage");
+    }
+    public ShootQueue(HardwareMap hardwareMap, LEDHandler ledHandler) {
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
         front = hardwareMap.servo.get("front");
@@ -158,6 +170,7 @@ public class ShootQueue {
                         back.setPosition(pos);
                         break;
                 }
+                LEDHandler.led1Color = LEDHandler.LED_WHITE;
                 state = 0; // Move back to idle to check for next ball
                 break;
 
