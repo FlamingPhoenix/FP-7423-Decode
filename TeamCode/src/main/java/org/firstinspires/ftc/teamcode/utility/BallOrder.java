@@ -13,47 +13,8 @@ public class BallOrder {
         this.middle = middle;
         this.back = back;
     }
-
-    /**
-     * REAL-TIME version for main loop
-     * Takes a queue of target colors and converts to position queue for ShootQueue
-     * Updates ball state from ColorHandler each call
-     * Sets LED feedback automatically
-     * @param targetColorQueue queue of BallColors to shoot (in order)
-     * @param currentPos current linkage position
-     * @param colorHandler to detect current ball positions
-     * @param useStrict if true, uses strict matching; if false, uses optimal matching
-     * @return queue of POS values for ShootQueue to use
-     */
-    public Queue<POS> processColorQueue(Queue<BallColor> targetColorQueue, POS currentPos,
-                                        ColorHandler colorHandler, boolean useStrict) {
-        Queue<POS> positionQueue = new ArrayDeque<>();
-        if(targetColorQueue == null || colorHandler == null || currentPos == null) {
-            return positionQueue;
-        }
-
-        // Update current ball positions from sensors
-        BallOrder detectedOrder = colorHandler.detectBallOrder();
-        this.front = detectedOrder.front;
-        this.middle = detectedOrder.middle;
-        this.back = detectedOrder.back;
-
-        // Convert first 3 colors in queue to a BallOrder target
-        BallColor[] targetArray = new BallColor[]{BallColor.UNKNOWN, BallColor.UNKNOWN, BallColor.UNKNOWN};
-        Queue<BallColor> tempQueue = new ArrayDeque<>(targetColorQueue);
-        for(int i = 0; i < 3 && !tempQueue.isEmpty(); i++) {
-            targetArray[i] = tempQueue.poll();
-        }
-        BallOrder targetOrder = new BallOrder(targetArray[0], targetArray[1], targetArray[2]);
-
-        // Find optimal positions
-        if(useStrict) {
-            positionQueue = findOrderStrict(targetOrder, currentPos);
-        } else {
-            positionQueue = findOptimalOrder(targetOrder, currentPos);
-        }
-
-        return positionQueue;
+    public boolean isFull(){
+        return (front != BallColor.UNKNOWN && middle != BallColor.UNKNOWN && back != BallColor.UNKNOWN);
     }
 
 

@@ -37,13 +37,6 @@ public class ShootQueue {
         lock = hardwareMap.servo.get("lock");
         linkage = hardwareMap.servo.get("linkage");
     }
-    public ShootQueue(HardwareMap hardwareMap, LEDHandler ledHandler) {
-        back = hardwareMap.servo.get("back");
-        middle = hardwareMap.servo.get("middle");
-        front = hardwareMap.servo.get("front");
-        lock = hardwareMap.servo.get("lock");
-        linkage = hardwareMap.servo.get("linkage");
-    }
 
     /**
         * Call this to add a new ball to the shoot queue. Will be processed in order added
@@ -66,7 +59,8 @@ public class ShootQueue {
 
     }
 
-    /** * Call this to clear the shoot queue. Useful for canceling shots or resetting state
+    /** 
+     * Call this to clear the shoot queue. Useful for canceling shots or resetting state
      *
      */
     public void clearQueue() {

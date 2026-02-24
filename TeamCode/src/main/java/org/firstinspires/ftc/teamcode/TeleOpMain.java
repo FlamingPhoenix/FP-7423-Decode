@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.ColorHandler;
+import org.firstinspires.ftc.teamcode.utility.Debounce;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 import org.firstinspires.ftc.teamcode.utility.PersistentConstants;
@@ -50,7 +51,7 @@ public class TeleOpMain extends OpMode {
     ShootQueue shootQueue;
     PersistentConstants pc;
     LEDHandler ledHandler;
-
+    Debounce debouncer = new Debounce(300); //300ms debounce time for button presses
 
 
     //variables
@@ -107,11 +108,20 @@ public class TeleOpMain extends OpMode {
 
         switch (currentState) {
             case INTAKING:
+
                 //run intake until 3 balls are detected
+                //auto intake align????
                 //once all 3 detected (or manual override) clear all shoot queue and move to READY
-                //shootQueue.clearQueue();
+
+
+                //intake.setPower(INTAKEPOWER);
                 //BallOrder ballOrder = colorHandler.detectBallOrder();
                 //ledHandler.ballColors(ballOrder);
+                //if(ballOrder.isFull() || gamepadoverride){
+                //shootQueue.clearQueue();
+                //currentState = STATE.READY;
+                //intake.setPower(0.1); //???keep balls from falling out????
+                //}
                 break;
             case READY:
                 //engage lock
@@ -119,6 +129,22 @@ public class TeleOpMain extends OpMode {
                 //controller inputs shooting order; either manual position or color order based.
                 //waits until controller selects shoot and then moves to SHOOTING
                 //start revving up the shooter?
+                
+                //debounced buttons!
+                //if(debouncer.update("gamepad2.dpad_down", gamepad2.dpad_down)){
+                //    shootQueue.addOne(POS.BACK);
+                //}
+                //if(debouncer.update("gamepad2.dpad_up", gamepad2.dpad_up)){
+                //    shootQueue.addOne(POS.MIDDLE);
+                //}
+                //if(debouncer.update("gamepad2.dpad_right", gamepad2.dpad_right)){
+                //    shootQueue.addOne(POS.FRONT);
+                //}
+
+                //if(gamepad1.right_bumper){
+                //    currentState = STATE.CALCULATING;
+                //}
+
                 break;
             case CALCULATING:
                 // finds optimal shooting order; immediately moves to SHOOTING
@@ -139,6 +165,15 @@ public class TeleOpMain extends OpMode {
                 //disengage lock
                 //do nothing - before teleop starts or just driving around
                 //wait until controller starts intake and then move to INTAKING
+                if(gamepad1.right_trigger > 0.4){
+                    //intake.setPower(INTAKEPOWER);
+                    currentState = STATE.INTAKING;
+                }
+                break;
+            case RECOVER:
+                //if the state is messed up, reset as if restarting the entire teleop
+                //shootQueue.clearAndReset();
+                currentState = STATE.IDLE;
                 break;
         }
 

@@ -18,4 +18,6 @@ public class POSCONFIG {
     public static double LIFTERUP;
     public static double LIFTERDOWN;
     public static double LIFTERBLOCKING;
+    //
+    public static double INTAKEPOWER = 0.9;
 }

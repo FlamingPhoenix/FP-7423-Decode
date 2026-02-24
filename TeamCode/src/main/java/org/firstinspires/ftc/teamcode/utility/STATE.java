@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.utility;
 
 public enum STATE {
-    INTAKING, READY, CALCULATING, SHOOTING, IDLE
+    INTAKING, READY, CALCULATING, SHOOTING, IDLE, RECOVER
 }
