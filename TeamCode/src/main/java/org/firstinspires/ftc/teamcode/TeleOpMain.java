@@ -9,8 +9,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.util.Queue;
+
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
+import org.firstinspires.ftc.teamcode.utility.BallColor;
+import org.firstinspires.ftc.teamcode.utility.BallOrder;
 import org.firstinspires.ftc.teamcode.utility.ColorHandler;
 import org.firstinspires.ftc.teamcode.utility.Debounce;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
@@ -49,6 +53,8 @@ public class TeleOpMain extends OpMode {
     AutoAlign autoAligner;
     ColorHandler colorHandler;
     ShootQueue shootQueue;
+        Queue<BallColor> colorOrder;
+        Boolean colorMode = null; //false = position based shooting, true = color based shooting
     PersistentConstants pc;
     LEDHandler ledHandler;
     Debounce debouncer = new Debounce(300); //300ms debounce time for button presses
@@ -57,19 +63,25 @@ public class TeleOpMain extends OpMode {
     //variables
     double multiplier = 1.0;
     STATE currentState = STATE.IDLE;
+    boolean limeLightWorking = false;
+    double shooterTPS = -1050;
+    double tx;
 
     @Override
     public void init() {
         //hardware init
-        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        //shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
 
-        /*
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        try {
+            limelight = hardwareMap.get(Limelight3A.class, "limelight");
             limelight.setPollRateHz(100);
             limelight.start();
             limelight.pipelineSwitch(0);
-         */
+        }
+        catch (IllegalArgumentException e){//change to llworking = false on default and set to true when llworking
+            limeLightWorking = false;
+        }
 
         //modules init
         drive = new FieldCentricDrivePinPoint(hardwareMap, true);
@@ -103,9 +115,24 @@ public class TeleOpMain extends OpMode {
             //auto align control
             //lock override control
 
-        //handle limelight
-        //handle shooter speed
 
+        // ===================================
+        // LIMELIGHT + SHOOT CALCULATOR
+        if(limeLightWorking) {
+            autoAlignActive = false; // TODO: SET CONTROL
+            LLResult result = limelight.getLatestResult();
+            shooterTPS = shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation;
+            if (result != null && result.isValid()) { 
+                tx = result.getTx();
+                distanceToTarget = shooterCalculator.distanceToTarget; // Get calculated distance
+//                telemetry.addData("Limelight TX", tx);
+                telemetry.addData("Distance to Target (in)", String.format("%.1f", distanceToTarget));
+            } else{ tx=0; autoAlignActive = false; }
+        } else{ autoAlignActive = false; shooterTPS =-1050; tx=0; }
+
+
+        // ===================================
+        // SMART STATES
         switch (currentState) {
             case INTAKING:
 
@@ -118,28 +145,57 @@ public class TeleOpMain extends OpMode {
                 //BallOrder ballOrder = colorHandler.detectBallOrder();
                 //ledHandler.ballColors(ballOrder);
                 //if(ballOrder.isFull() || gamepadoverride){
-                //shootQueue.clearQueue();
+                //shootQueue.clearAndReset();
+                //colorOrder.clear();
                 //currentState = STATE.READY;
                 //intake.setPower(0.1); //???keep balls from falling out????
                 //}
                 break;
             case READY:
                 //engage lock
-                //set LED colors to match ball order
+                //lock.setPosition(POSCONFIG.LOCKENGAGED);
+
                 //controller inputs shooting order; either manual position or color order based.
                 //waits until controller selects shoot and then moves to SHOOTING
                 //start revving up the shooter?
                 
                 //debounced buttons!
-                //if(debouncer.update("gamepad2.dpad_down", gamepad2.dpad_down)){
-                //    shootQueue.addOne(POS.BACK);
-                //}
-                //if(debouncer.update("gamepad2.dpad_up", gamepad2.dpad_up)){
-                //    shootQueue.addOne(POS.MIDDLE);
-                //}
-                //if(debouncer.update("gamepad2.dpad_right", gamepad2.dpad_right)){
-                //    shootQueue.addOne(POS.FRONT);
-                //}
+
+                //only one mode active at a time
+                if(colorMode == null || colorMode == false) {
+                    //manual shoote order control. Shows selected positions on LEDs
+                    colorMode = false;
+                    //if(debouncer.update("gamepad2.dpad_down", gamepad2.dpad_down)){
+                    //    shootQueue.addOne(POS.BACK);
+                    //    ledHandler.led3Color = LEDHandler.LED_WHITE;
+                    //}
+                    //if(debouncer.update("gamepad2.dpad_up", gamepad2.dpad_up)){
+                    //    shootQueue.addOne(POS.MIDDLE);
+                    //    ledHandler.led2Color = LEDHandler.LED_WHITE;
+                    //}
+                    //if(debouncer.update("gamepad2.dpad_right", gamepad2.dpad_right)){
+                    //    shootQueue.addOne(POS.FRONT);
+                    //    ledHandler.led1Color = LEDHandler.LED_WHITE;
+                    //}
+                    //if(debouncer.update("gamepad2.dpad_down", gamepad2.dpad_down)){//clear and reset shoot order
+                    //    shootQueue.clearQueue();
+                    //    BallOrder ballOrder = colorHandler.detectBallOrder();
+                    //    ledHandler.ballColors(ballOrder);
+                    //}
+                }
+                if(colorMode == null || colorMode == true){
+                    //color order based shooting control. Shows selected colors on LEDs
+                    colorMode = true;
+                    //if(debouncer.update("gamepad2.a", gamepad2.a)){ //color order based shooting
+                    //    colorOrder.add(BallColor.PURPLE);
+                    //}
+                    //if(debouncer.update("gamepad2.b", gamepad2.b)){
+                    //    colorOrder.add(BallColor.GREEN);
+                    //}
+                }
+                
+
+
 
                 //if(gamepad1.right_bumper){
                 //    currentState = STATE.CALCULATING;
@@ -149,8 +205,17 @@ public class TeleOpMain extends OpMode {
             case CALCULATING:
                 // finds optimal shooting order; immediately moves to SHOOTING
                 // LEDS set to reflect shooting (automatically done in findOptimalOrder())
-                //Queue<POS> shootSequence = ballOrder.findOptimalOrder(shootCalculator.calculateTargetOrder());
-                //shootQueue.setQueue(shootSequence);
+
+                if(colorMode == false){
+                    //do nothing; shoot order is already set; move to reset and shooting
+                } else{
+                    //BallOrder targetOrder = BallOrder.queueToBallOrder(colorOrder); // convert queue of colors to ball order object
+                    //BallOrder ballOrder = colorHandler.detectBallOrder(); // detect current ball order
+                    //Queue<POS> shootSequence = ballOrder.findOptimalOrder(targetOrder, shootQueue.getCurrentPos()); // find optimal shoot sequence
+                    //shootQueue.setQueue(shootSequence); // send to shoot queue
+                }
+                colorOrder.clear(); //clear color order for next time
+                colorMode = null; //reset color mode for next time
                 currentState = STATE.SHOOTING;
                 break;
             case SHOOTING:

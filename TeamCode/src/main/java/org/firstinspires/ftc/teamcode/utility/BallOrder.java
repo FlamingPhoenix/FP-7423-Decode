@@ -319,5 +319,28 @@ public class BallOrder {
         LEDHandler.led3Color = ledColors[2];
     }
 
+
+    public static BallOrder queueToBallOrder(Queue<BallColor> queue) {
+        BallOrder ballOrder = new BallOrder();
+        for(int i = 0; i<3; i++){
+            BallColor color = queue.poll();
+            if(color == null) {
+                color = BallColor.UNKNOWN;
+            }
+            switch (i){
+                case 0:
+                    ballOrder.front = color;
+                    break;
+                case 1:
+                    ballOrder.middle = color;
+                    break;
+                case 2:
+                    ballOrder.back = color;
+                    break;
+            }
+        }
+        return ballOrder;
+    }
+
     // ...existing code...
 }

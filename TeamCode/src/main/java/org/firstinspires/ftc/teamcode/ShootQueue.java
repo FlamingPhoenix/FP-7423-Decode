@@ -25,7 +25,7 @@ public class ShootQueue {
 
     // State machine variables
     int state = 0;  // 0=idle, 1=move linkage, 2=push ball, 3=reset
-    POS currentPos = POS.BACK; // Default to back, will be set when we pull from queue
+    public POS currentPos = POS.BACK; // Default to back, will be set when we pull from queue
     double linkageMoveTime = 0; // Time to wait for linkage to move, set based on distance
 
     public boolean lockOverridden = false; // If true, lock will not engage and will stay disengaged
