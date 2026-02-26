@@ -57,7 +57,8 @@ public class TeleOpMain extends OpMode {
         Boolean colorMode = null; //false = position based shooting, true = color based shooting
     PersistentConstants pc;
     LEDHandler ledHandler;
-    Debounce debouncer = new Debounce(300); //300ms debounce time for button presses
+    Debounce debouncer = new Debounce(200); //quick debounce time for button presses
+    Debounce longDebouncer = new Debounce(600); //slow debounce time for state changes
 
 
     //variables
@@ -92,8 +93,8 @@ public class TeleOpMain extends OpMode {
             shootCalculator.setVelocityMultiplier(velocityMultiplier);
             shootCalculator.setVelocityCompensation(velocityCompensation);
         /*
+        ColorHandler colorHandler = new SingleColorHandler(hardwareMap);
         shootQueue = new ShootQueue(hardwareMap);
-        colorHandler = new ColorHandler(hardwareMap);
         ledHandler = new LEDHandler(hardwareMap);
             ledHandler.setALLColor(LEDHandler.LED_BLUE);
             ledHandler.setColorsFromStatic();
@@ -140,15 +141,17 @@ public class TeleOpMain extends OpMode {
                 //auto intake align????
                 //once all 3 detected (or manual override) clear all shoot queue and move to READY
 
-
+                //if(gamepad1.right_trigger > 0.2){
                 //intake.setPower(INTAKEPOWER);
+                //} else { intake.setPower(0); }
+
                 //BallOrder ballOrder = colorHandler.detectBallOrder();
                 //ledHandler.ballColors(ballOrder);
-                //if(ballOrder.isFull() || gamepadoverride){
-                //shootQueue.clearAndReset();
-                //colorOrder.clear();
-                //currentState = STATE.READY;
-                //intake.setPower(0.1); //???keep balls from falling out????
+                //if(ballOrder.isFull() || longDebouncer.update("gamepad1.right_bumper", gamepad1.right_bumper)){
+                    //shootQueue.clearAndReset();
+                    //colorOrder.clear();
+                    //currentState = STATE.READY;
+                    //intake.setPower(0.1); //???keep balls from falling out????
                 //}
                 break;
             case READY:
@@ -197,7 +200,7 @@ public class TeleOpMain extends OpMode {
 
 
 
-                //if(gamepad1.right_bumper){
+                //if(longDebouncer.update("gamepad1.right_bumper", gamepad1.right_bumper)){
                 //    currentState = STATE.CALCULATING;
                 //}
 
@@ -230,7 +233,7 @@ public class TeleOpMain extends OpMode {
                 //disengage lock
                 //do nothing - before teleop starts or just driving around
                 //wait until controller starts intake and then move to INTAKING
-                if(gamepad1.right_trigger > 0.4){
+                if(gamepad1.right_trigger > 0.6){
                     //intake.setPower(INTAKEPOWER);
                     currentState = STATE.INTAKING;
                 }
