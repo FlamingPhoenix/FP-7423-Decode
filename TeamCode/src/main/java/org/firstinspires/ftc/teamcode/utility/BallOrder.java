@@ -321,7 +321,7 @@ public class BallOrder {
 
 
     public static BallOrder queueToBallOrder(Queue<BallColor> queue) {
-        BallOrder ballOrder = new BallOrder();
+        BallOrder ballOrder = new BallOrder(BallColor.PURPLE, BallColor.PURPLE, BallColor.PURPLE);
         for(int i = 0; i<3; i++){
             BallColor color = queue.poll();
             if(color == null) {

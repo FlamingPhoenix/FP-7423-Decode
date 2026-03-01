@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.shooter.LimeLightLocator;
 import org.firstinspires.ftc.teamcode.shooter.PerfectShooting;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 
-@TeleOp
+@TeleOp(name = "TeleOpOLD")
 public class TeleOpMain extends OpMode{
     /*
     TODO 12-9-25
@@ -26,10 +26,11 @@ public class TeleOpMain extends OpMode{
     IMPLEMENT LIMELIGHT
     ADD BUTTON FOR AUTOALIGN
      */
-    public static double KP = 60;
+    public static double KP = 50;
     public static double KI = 0;
     public static double KD = 0.2;
     public static double KF = 17.2;
+
 
 
     FieldCentricDrive drive;

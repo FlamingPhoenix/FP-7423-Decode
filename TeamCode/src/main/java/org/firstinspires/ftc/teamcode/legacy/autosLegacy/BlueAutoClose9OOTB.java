@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.legacy.autosLegacy;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -9,7 +9,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -20,11 +19,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 
-@Autonomous(name = "Red Auto Close 9 OOTB", group = "Autonomous")
+//@Autonomous(name = "Blue Auto Close 9 OOTB", group = "Autonomous")
 @Configurable
-public class RedAutoClose9OOTB extends OpMode {
+public class BlueAutoClose9OOTB extends OpMode {
 
     private TelemetryManager panelsTelemetry;
     public Follower follower;
@@ -62,8 +61,8 @@ public class RedAutoClose9OOTB extends OpMode {
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
 
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(110.252, 135.719, Math.toRadians(0)));
+        follower = ConstantsOLD.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(34.000, 135.719, Math.toRadians(180)));
 
         // Initialize Limelight
         try {
@@ -129,86 +128,101 @@ public class RedAutoClose9OOTB extends OpMode {
         public PathChain Path4;
         public PathChain Path5;
         public PathChain Path6;
-        public PathChain Path7;
+        public PathChain Path7A;
+        public PathChain Path7B;
         public PathChain Path8;
         public PathChain Path12;
 
         public Paths(Follower follower) {
             Path2 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(110.252, 135.719),
+                new BezierLine(
+                  new Pose(34.000, 135.719),
 
-                                    new Pose(106.316, 111.408)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(36))
+                  new Pose(38.000, 111.408)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(140))
 
-                    .build();
+              .build();
 
             Path3 = follower.pathBuilder().addPath(
-                            new BezierCurve(
-                                    new Pose(106.316, 111.408),
-                                    new Pose(90.602, 107.453),
-                                    new Pose(91.748, 82.750)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(180))
+                new BezierCurve(
+                  new Pose(38.000, 111.408),
+                  new Pose(54.000, 107.453),
+                  new Pose(52.252, 90.750)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(140), Math.toRadians(0))
 
-                    .build();
+              .build();
 
             Path4 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(91.748, 82.750),
+                new BezierLine(
+                  new Pose(52.252, 90.750),
 
-                                    new Pose(123.000, 82.750)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                  new Pose(21.000, 90.750)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
 
-                    .build();
-
+              .build();
 
             Path5 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(123.000, 82.750),
+                new BezierLine(
+                  new Pose(21.000, 90.750),
 
-                                    new Pose(109.000, 103.000)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(47))
-                    .build();
+                  new Pose(35.000, 103.000)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(131))
+
+              .build();
 
             Path6 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(109.000, 103.000),
+                new BezierLine(
+                  new Pose(35.000, 103.000),
 
-                                    new Pose(98.000, 59.500)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(180))
-                    .build();
+                  new Pose(46.000, 67.500)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(131), Math.toRadians(0))
 
-            Path7 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(98.000, 59.500),
+              .build();
 
-                                    new Pose(125.000, 59.500)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-                    .build();
+            Path7A = follower.pathBuilder().addPath(
+                new BezierLine(
+                  new Pose(46.000, 67.500),
+
+                  new Pose(19.000, 67.500)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+
+              .build();
+
+            Path7B = follower.pathBuilder().addPath(
+                new BezierLine(
+                  new Pose(19.000, 67.500),
+
+                  new Pose(17.5, 70.500)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+
+              .build();
 
             Path8 = follower.pathBuilder().addPath(
-                            new BezierCurve(
-                                    new Pose(125.000, 59.000),
-                                    new Pose(102.182, 78.155),
-                                    new Pose(109.000, 103.000)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(49))
-                    .build();
+                new BezierCurve(
+                  new Pose(17.5, 70.000),
+                  new Pose(42.000, 78.155),
+                  new Pose(35.000, 105.000)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(131))
+
+              .build();
 
             Path12 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(109, 103),
+                new BezierLine(
+                  new Pose(35.000, 105.000),
 
-                                    new Pose(115, 82.750)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(0))
-                    .build();
+                  new Pose(29, 82.750)
+                )
+              ).setLinearHeadingInterpolation(Math.toRadians(131), Math.toRadians(180))
+
+              .build();
         }
     }
 
@@ -307,9 +321,9 @@ public class RedAutoClose9OOTB extends OpMode {
                 }
                 break;
             case 14:
-                // Brief pause before starting Path7
+                // Brief pause before starting Path7A
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path7, 0.6, true);
+                    follower.followPath(paths.Path7A, 0.6, true);
                     setPathState(15);
                 }
                 break;
@@ -320,24 +334,47 @@ public class RedAutoClose9OOTB extends OpMode {
                 }
                 break;
             case 16:
-                // Hold intake for 500ms after Path7
-                if (pathTimer.getElapsedTimeSeconds() > 0.5) {
+                // Brief pause before starting Path7B
+                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
+                    // Turn off intake during Path7B
+                    intake.setPower(0);
+                    wheel.setPower(0);
+                    follower.followPath(paths.Path7B, 0.6, true);
                     setPathState(17);
                 }
                 break;
             case 17:
-                follower.followPath(paths.Path8);
-                // Start charging up shooter while moving to shooting position
-                shooter.setVelocity(-1050);
-                setPathState(18);
-                break;
-            case 18:
                 if (!follower.isBusy()) {
                     pathTimer.resetTimer();
+                    setPathState(18);
+                }
+                break;
+            case 18:
+                // 1 second wait after Path7B
+                if (pathTimer.getElapsedTimeSeconds() > 1.0) {
                     setPathState(19);
                 }
                 break;
             case 19:
+                follower.followPath(paths.Path8);
+                // Start charging up shooter while moving to shooting position
+                shooter.setVelocity(-1050);
+                pathTimer.resetTimer();
+                setPathState(20);
+                break;
+            case 20:
+                // Turn on intake after 1 second into Path8
+                if (pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    intake.setPower(-0.9);
+                    wheel.setPower(1);
+                }
+
+                if (!follower.isBusy()) {
+                    pathTimer.resetTimer();
+                    setPathState(21);
+                }
+                break;
+            case 21:
                 // 100ms wait after Path8
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
                     // Stop intake motor but keep wheel running for sequence
@@ -346,20 +383,20 @@ public class RedAutoClose9OOTB extends OpMode {
                     shooterSpeed = -1050;
                     firstBallSpeed = -1050;
                     startShooting(); // Trigger shooting sequence
-                    setPathState(20);
+                    setPathState(22);
                 }
-                break;
-            case 20:
-                // Wait for shooting to complete
-                if (!inShoot) {
-                    setPathState(21); // Continue to Path12
-                }
-                break;
-            case 21:
-                follower.followPath(paths.Path12);
-                setPathState(22);
                 break;
             case 22:
+                // Wait for shooting to complete
+                if (!inShoot) {
+                    setPathState(23); // Continue to Path12
+                }
+                break;
+            case 23:
+                follower.followPath(paths.Path12);
+                setPathState(24);
+                break;
+            case 24:
                 if (!follower.isBusy()) {
                     setPathState(-1); // End autonomous
                 }

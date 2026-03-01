@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -34,6 +35,7 @@ public class TeleOpMain extends OpMode {
     public static double KD = 0.2;
     public static double KF = 15;
 
+
     //drive initialization
     FieldCentricDrivePinPoint drive;
 
@@ -42,6 +44,8 @@ public class TeleOpMain extends OpMode {
     Servo back, middle, front, lock, linkage;
     DcMotor intake;
     DcMotorEx shooter;
+    boolean autoAlignActive = false;
+
     Limelight3A limelight;
     ColorSensor middlec, backc, frontc;
 
@@ -60,13 +64,16 @@ public class TeleOpMain extends OpMode {
     Debounce debouncer = new Debounce(200); //quick debounce time for button presses
     Debounce longDebouncer = new Debounce(600); //slow debounce time for state changes
 
-
+    ShootCalculator shooterCalculator;
     //variables
     double multiplier = 1.0;
     STATE currentState = STATE.IDLE;
-    boolean limeLightWorking = false;
+    boolean limeLightWorking = true;
+    double positionCompensation;
+    double multiplierCompensation = 1.0;
     double shooterTPS = -1050;
-    double tx;
+    double ta, tx, ty,distanceToTarget;
+
 
     @Override
     public void init() {
