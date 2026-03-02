@@ -46,6 +46,17 @@ public class ShootQueue {
     public void add(POS position) {
         queue.add(position);
     }
+    public void addMultiple(POS... positions) {
+        for(POS pos : positions) {
+            queue.add(pos);
+        }
+    }
+    public void addRapid(){
+        queue.add(POS.BACK);
+        queue.add(POS.MIDDLE);
+        queue.add(POS.FRONT);
+        queue.add(POS.RESET);
+    }
 
     /** * Call this to add a new ball to the shoot queue and then immediately reset. Useful for manual control in teleop
      * Lifters will NOT BLOCK
@@ -134,6 +145,8 @@ public class ShootQueue {
                     case BACK:
                         back.setPosition(LIFTERUP);
                         break;
+                    case RESET:
+                        break; // should never happen, reset is handled separately
                 }
 
                 state = 2; // Move to next state
@@ -163,6 +176,8 @@ public class ShootQueue {
                     case BACK:
                         back.setPosition(pos);
                         break;
+                    case RESET:
+                        break;
                 }
                 LEDHandler.led1Color = LEDHandler.LED_BLUE; // success
                 state = 0; // Move back to idle to check for next ball
@@ -185,6 +200,10 @@ public class ShootQueue {
 
     public POS getCurrentPos() {
         return currentPos;
+    }
+    public void linkageBack() {
+        currentPos = POS.BACK;
+        linkage.setPosition(currentPos.linkagePos);
     }
 
 }

@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.utility.ConfidenceFilter;
 import org.firstinspires.ftc.teamcode.utility.Debounce;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.LEDHandler;
+import org.firstinspires.ftc.teamcode.utility.POS;
 import org.firstinspires.ftc.teamcode.utility.PersistentConstants;
 import org.firstinspires.ftc.teamcode.utility.STATE;
 
@@ -75,6 +76,7 @@ public class TeleOpMain extends OpMode {
     double multiplierCompensation = 1.0;
     double shooterTPS = -1050;
     double ta, tx, ty,distanceToTarget;
+    boolean rapidMode = true;
 
     int pickedOrders = 0;
     BallOrder ballOrder;
@@ -148,21 +150,35 @@ public class TeleOpMain extends OpMode {
         // SMART STATES
         switch (currentState) {
             case INTAKING:
-                lock.setPosition(POSCONFIG.LOCKDISENGAGED);
+                lock.setPosition(POSCONFIG.LOCKDISENGAGED); //disengage lock to allow balls to move in
                 //run intake until 3 balls are detected
                 //auto intake align????
                 //once all 3 detected (or manual override) clear all shoot queue and move to READY
 
-                if(gamepad1.right_trigger > 0.2){
+                if(gamepad1.right_trigger > 0.2){ //power intake, could be constantly on
                 intake.setPower(INTAKEPOWER);
                 } else { intake.setPower(0); }
 
-                ballOrder = colorHandler.detectBallOrder();
+                ballOrder = colorHandler.detectBallOrder(); //ball leds
                 ledHandler.ballColors(ballOrder);
+
+
+                //move on case
                 if(confidenceFilter.update(ballOrder.isFull()) || longDebouncer.update("gamepad1.right_bumper", gamepad1.right_bumper)){
+                    // clean shooter
                     shootQueue.clearAndReset();
+                    
+                    if(rapidMode){
+                        // in rapid mode, skip selection and immediately rapid
+                        shootQueue.addRapid();
+                        currentState = STATE.SHOOTING;
+                        lock.setPosition(POSCONFIG.LOCKENGAGED); //engage lock to hold balls in place during rapid fire
+                    } else {
+                        //otherwise, move to ready state to allow for shoot order selection
+                        currentState = STATE.READY;
+                    }
+                    //clean color order and stop intake
                     colorOrder.clear();
-                    currentState = STATE.READY;
                     intake.setPower(0);
                     pickedOrders = 0;
                 }
@@ -255,9 +271,10 @@ public class TeleOpMain extends OpMode {
                 //wait until controller starts intake and then move to INTAKING
                 //disengage lock
                 shooter.setVelocity(0); //stop shooter from revving
-                
                 if(gamepad1.right_trigger > 0.6){ //higher threshold to prevent accidents
+                    //move on to intaking
                     intake.setPower(INTAKEPOWER);
+                    shootQueue.linkageBack(); // go back to give space for intake
                     currentState = STATE.INTAKING;
                 }
                 break;
@@ -281,7 +298,7 @@ public class TeleOpMain extends OpMode {
 
 
         //update LEDs
-        //ledHandler.setColorsFromStatic();
+        ledHandler.setColorsFromStatic();
 
         //update drive
         drive.drive(gamepad1, multiplier);

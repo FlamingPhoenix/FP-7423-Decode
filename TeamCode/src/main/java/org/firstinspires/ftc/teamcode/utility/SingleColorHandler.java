@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class SingleColorHandler implements ColorHandler {
     ColorSensor backc, middlec, frontc;
     public SingleColorHandler(HardwareMap hardwareMap) {
-        backc = hardwareMap.get(ColorSensor.class, "backc");
-        middlec = hardwareMap.get(ColorSensor.class, "middlec");
-        frontc = hardwareMap.get(ColorSensor.class, "frontc");
+        backc = hardwareMap.get(ColorSensor.class, "backc1");
+        middlec = hardwareMap.get(ColorSensor.class, "middlec1");
+        frontc = hardwareMap.get(ColorSensor.class, "frontc1");
     }
     @Override
     public BallOrder detectBallOrder() {
