@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.legacy.autosLegacy;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -9,7 +9,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -22,9 +21,10 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
+import org.firstinspires.ftc.teamcode.BallDetectionIntakeControl;
 
-@Autonomous(name = "Blue Auto Close 12", group = "Autonomous")
+//@Autonomous(name = "Blue Auto Close 12", group = "Autonomous")
 @Configurable
 public class BlueAutoClose12 extends OpMode {
 
@@ -58,13 +58,16 @@ public class BlueAutoClose12 extends OpMode {
     boolean isFirstShoot = true; // Track if this is the first shooting sequence
     boolean keepShooterWarmed = false; // Keep shooter running at -1000 when not shooting
 
+    // Ball detection system
+    BallDetectionIntakeControl ballDetection;
+
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = ConstantsOLD.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(34.000, 135.719, Math.toRadians(180)));
 
         // Initialize Limelight
@@ -89,6 +92,9 @@ public class BlueAutoClose12 extends OpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         wheel = hardwareMap.crservo.get("wheel");
 
+        // Initialize ball detection system
+        ballDetection = new BallDetectionIntakeControl(hardwareMap);
+
         // Setup shooter
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -107,6 +113,9 @@ public class BlueAutoClose12 extends OpMode {
         pathState = autonomousPathUpdate();
         updateShootingSequence();
 
+        // Update ball detection system
+        ballDetection.updateBallDetection();
+
         panelsTelemetry.debug("Path State", pathState);
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
@@ -115,6 +124,8 @@ public class BlueAutoClose12 extends OpMode {
         panelsTelemetry.debug("Shoot State", shootSequenceState);
         panelsTelemetry.debug("AprilTag ID", aprilTagId);
         panelsTelemetry.debug("Shooting Order", shootingOrder);
+        panelsTelemetry.debug("Lock Activated", ballDetection.isLockActivated());
+        panelsTelemetry.debug("Outtake Active", ballDetection.isInOuttakeSequence());
         panelsTelemetry.update(telemetry);
     }
 
@@ -289,9 +300,8 @@ public class BlueAutoClose12 extends OpMode {
                 break;
             case 4:
                 if (!follower.isBusy()) {
-                    // Turn on intake after Path3 completion
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
+                    // Turn on intake after Path3 completion using ball detection system
+                    ballDetection.runNormalIntake();
                     pathTimer.resetTimer();
                     setPathState(5);
                 }
@@ -330,8 +340,8 @@ public class BlueAutoClose12 extends OpMode {
             case 10:
                 // 500ms wait after Path5
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    // Stop intake motor but keep wheel running for sequence
-                    intake.setPower(0);
+                    // Stop intake using ball detection system
+                    ballDetection.stopIntake();
                     // Override shooter speeds for sequence
                     shooterSpeed = -1050;
                     firstBallSpeed = -1050;
@@ -351,9 +361,8 @@ public class BlueAutoClose12 extends OpMode {
                 break;
             case 13:
                 if (!follower.isBusy()) {
-                    // Turn on intake after Path6 completion
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
+                    // Turn on intake after Path6 completion using ball detection system
+                    ballDetection.runNormalIntake();
                     pathTimer.resetTimer();
                     setPathState(14);
                 }
@@ -392,8 +401,8 @@ public class BlueAutoClose12 extends OpMode {
             case 19:
                 // 100ms wait after Path8
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    // Stop intake motor but keep wheel running for sequence
-                    intake.setPower(0);
+                    // Stop intake using ball detection system
+                    ballDetection.stopIntake();
                     // Override shooter speeds for this sequence
                     shooterSpeed = -1050;
                     firstBallSpeed = -1050;
@@ -413,9 +422,8 @@ public class BlueAutoClose12 extends OpMode {
                 break;
             case 22:
                 if (!follower.isBusy()) {
-                    // Turn on intake after Path9 completion
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
+                    // Turn on intake after Path9 completion using ball detection system
+                    ballDetection.runNormalIntake();
                     pathTimer.resetTimer();
                     setPathState(23);
                 }
@@ -454,8 +462,8 @@ public class BlueAutoClose12 extends OpMode {
             case 28:
                 // 100ms wait after Path11
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    // Stop intake motor but keep wheel running for final sequence
-                    intake.setPower(0);
+                    // Stop intake using ball detection system for final sequence
+                    ballDetection.stopIntake();
                     // Use same speeds for final sequence
                     shooterSpeed = -1050;
                     firstBallSpeed = -1050;
@@ -532,9 +540,8 @@ public class BlueAutoClose12 extends OpMode {
             inShoot = true;
             shootSequenceTimer.reset();
 
-            // Turn on intake and wheel during shooting
-            intake.setPower(-0.9);
-            wheel.setPower(1);
+            // Turn on intake and wheel during shooting using ball detection system
+            ballDetection.runNormalIntake();
 
             // Always use normal shooting order for all sequences
             shootingOrder = 0; // Normal order: back->middle->front
@@ -625,9 +632,8 @@ public class BlueAutoClose12 extends OpMode {
             case 6: // End sequence
                 if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
                     front.setPosition(0); // Reset front servo
-                    // Turn off intake and wheel when shooting ends
-                    intake.setPower(0);
-                    wheel.setPower(0);
+                    // Turn off intake and wheel when shooting ends using ball detection system
+                    ballDetection.stopIntake();
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up
@@ -692,9 +698,8 @@ public class BlueAutoClose12 extends OpMode {
             case 2: // End sequence
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     back.setPosition(0); // Reset back servo
-                    // Turn off intake and wheel when shooting ends
-                    intake.setPower(0);
-                    wheel.setPower(0);
+                    // Turn off intake and wheel when shooting ends using ball detection system
+                    ballDetection.stopIntake();
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up
@@ -759,9 +764,8 @@ public class BlueAutoClose12 extends OpMode {
             case 4: // End sequence
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     middle.setPosition(0); // Keep middle servo up
-                    // Turn off intake and wheel when shooting ends
-                    intake.setPower(0);
-                    wheel.setPower(0);
+                    // Turn off intake and wheel when shooting ends using ball detection system
+                    ballDetection.stopIntake();
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up
@@ -826,9 +830,8 @@ public class BlueAutoClose12 extends OpMode {
             case 4: // End sequence
                 if (shootSequenceTimer.milliseconds() > 800) { // Longer wait for ball to shoot
                     middle.setPosition(0); // Keep middle servo up
-                    // Turn off intake and wheel when shooting ends
-                    intake.setPower(0);
-                    wheel.setPower(0);
+                    // Turn off intake and wheel when shooting ends using ball detection system
+                    ballDetection.stopIntake();
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.legacy.autosLegacy;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -9,7 +9,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -17,12 +16,10 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 
-@Autonomous(name = "Blue Far Steal 9", group = "Autonomous")
+//@Autonomous(name = "Blue Far Steal 9", group = "Autonomous")
 @Configurable
 public class BlueFarSteal9 extends OpMode {
 
@@ -62,7 +59,7 @@ public class BlueFarSteal9 extends OpMode {
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = ConstantsOLD.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(56.000, 8.000, Math.toRadians(90)));
 
         // Initialize Limelight

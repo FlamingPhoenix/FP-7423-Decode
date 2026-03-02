@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.utility;
-import javax.swing.colorchooser.ColorSelectionModel;
+//import javax.swing.colorchooser.ColorSelectionModel;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class DualColorHandler implements ColorHandler {
     ColorSensor backc1, backc2, middlec1, middlec2, frontc1, frontc2;

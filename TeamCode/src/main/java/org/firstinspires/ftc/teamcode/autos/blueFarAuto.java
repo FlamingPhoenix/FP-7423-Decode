@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.autos;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -17,14 +17,12 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 
-@Autonomous(name = "Red Auto Far 15", group = "Autonomous")
+@Autonomous(name = "Blue Far Auto", group = "Autonomous")
 @Configurable
-public class RedAutoFar15 extends OpMode {
+public class blueFarAuto extends OpMode {
 
     private TelemetryManager panelsTelemetry;
     public Follower follower;
@@ -45,7 +43,7 @@ public class RedAutoFar15 extends OpMode {
 
     // Intake hardware
     DcMotor intake;
-    CRServo wheel;
+
     boolean inShoot = false;
     int shootSequenceState = 0;
     ElapsedTime shootSequenceTimer = new ElapsedTime();
@@ -62,8 +60,8 @@ public class RedAutoFar15 extends OpMode {
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
 
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(87.951, 8.000, Math.toRadians(90)));
+        follower = ConstantsOLD.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(56.000, 8.000, Math.toRadians(90)));
 
         // Initialize Limelight
         try {
@@ -85,7 +83,7 @@ public class RedAutoFar15 extends OpMode {
 
         // Initialize intake hardware
         intake = hardwareMap.get(DcMotor.class, "intake");
-        wheel = hardwareMap.crservo.get("wheel");
+
 
         // Setup shooter
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -127,147 +125,38 @@ public class RedAutoFar15 extends OpMode {
         public PathChain Path1;
         public PathChain Path2;
         public PathChain Path3;
-        public PathChain Path4;
-        public PathChain Path5;
-        public PathChain Path6;
-        public PathChain Path7;
-        public PathChain Path8;
-        public PathChain Path9;
-        public PathChain Path10;
-        public PathChain Path11;
-        public PathChain Path12;
-        public PathChain Path13;
 
         public Paths(Follower follower) {
-            Path1 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(87.951, 8.000),
+            Path1 = follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(56.000, 8.000),
+                                    new Pose(56.700, 15.300)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(112))
+                    .build();
 
-                  new Pose(91.015, 10.221)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(65))
+            Path2 = follower.pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(56.700, 15.300),
+                                    new Pose(66.064, 33.091),
+                                    new Pose(13.900, 36.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(112), Math.toRadians(180))
+                    .build();
 
-              .build();
-
-            Path2 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(91.015, 10.221),
-
-                  new Pose(119.653, 13.000)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(65), Math.toRadians(180))
-
-              .build();
-
-            Path3 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(119.653, 13.000),
-
-                  new Pose(134.213, 13.000)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-
-              .build();
-
-            Path4 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(134.213, 13.000),
-
-                  new Pose(91.000, 10.000)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(65))
-
-              .build();
-
-            Path5 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(91.000, 10.000),
-
-                  new Pose(97.739, 57.000)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(65), Math.toRadians(180))
-
-              .build();
-
-            Path6 = follower.pathBuilder().addPath(
-                new BezierCurve(
-                  new Pose(97.739, 57.000),
-                  new Pose(125.877, 55.608),
-                  new Pose(126.532, 65.097)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-
-              .build();
-
-            Path7 = follower.pathBuilder().addPath(
-                new BezierCurve(
-                  new Pose(126.532, 65.097),
-                  new Pose(90.825, 60.044),
-                  new Pose(88.195, 86.800)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(40))
-
-              .build();
-
-            Path8 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(88.195, 86.800),
-
-                  new Pose(99.544, 81.650)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(180))
-
-              .build();
-
-            Path9 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(99.544, 81.650),
-
-                  new Pose(125.000, 81.650)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-
-              .build();
-
-            Path10 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(125.000, 81.650),
-
-                  new Pose(88.195, 86.881)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(40))
-
-              .build();
-
-            Path11 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(88.195, 86.881),
-
-                  new Pose(99.347, 33.362)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(180))
-
-              .build();
-
-            Path12 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(99.347, 33.362),
-
-                  new Pose(125.000, 33.289)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
-
-              .build();
-
-            Path13 = follower.pathBuilder().addPath(
-                new BezierLine(
-                  new Pose(125.000, 33.289),
-
-                  new Pose(91.140, 10.049)
-                )
-              ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(65))
-
-              .build();
+            Path3 = follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(13.900, 36.000),
+                                    new Pose(57.000, 15.429)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(112))
+                    .build();
         }
     }
 
@@ -279,8 +168,10 @@ public class RedAutoFar15 extends OpMode {
                 break;
             case 1:
                 if (!follower.isBusy()) {
-                    startShooting();
-                    setPathState(2);
+                    if (Math.abs(shooter.getVelocity()) >= 1050) {
+                        startShooting();
+                        setPathState(2);
+                    }
                 }
                 break;
             case 2:
@@ -289,217 +180,32 @@ public class RedAutoFar15 extends OpMode {
                 }
                 break;
             case 3:
+                intake.setPower(-0.9);
                 follower.followPath(paths.Path2);
                 setPathState(4);
                 break;
             case 4:
                 if (!follower.isBusy()) {
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
-                    pathTimer.resetTimer();
                     setPathState(5);
                 }
                 break;
             case 5:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path3, 0.6, true);
-                    setPathState(6);
-                }
+                shooter.setVelocity(-1100);
+                follower.followPath(paths.Path3);
+                setPathState(6);
                 break;
             case 6:
                 if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(7);
+                    intake.setPower(0);
+                    if (Math.abs(shooter.getVelocity()) >= 1050) {
+                        shooterSpeed = -1050;
+                        firstBallSpeed = -1050;
+                        startShooting();
+                        setPathState(7);
+                    }
                 }
                 break;
             case 7:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    setPathState(8);
-                }
-                break;
-            case 8:
-                follower.followPath(paths.Path4);
-                shooter.setVelocity(-1050);
-                setPathState(9);
-                break;
-            case 9:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(10);
-                }
-                break;
-            case 10:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    intake.setPower(0);
-                    shooterSpeed = -1050;
-                    firstBallSpeed = -1050;
-                    startShooting();
-                    setPathState(11);
-                }
-                break;
-            case 11:
-                if (!inShoot) {
-                    setPathState(12);
-                }
-                break;
-            case 12:
-                follower.followPath(paths.Path5);
-                setPathState(13);
-                break;
-            case 13:
-                if (!follower.isBusy()) {
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
-                    pathTimer.resetTimer();
-                    setPathState(14);
-                }
-                break;
-            case 14:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path6, 0.6, true);
-                    setPathState(15);
-                }
-                break;
-            case 15:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(16);
-                }
-                break;
-            case 16:
-                if (pathTimer.getElapsedTimeSeconds() > 0.5) {
-                    setPathState(17);
-                }
-                break;
-            case 17:
-                follower.followPath(paths.Path7);
-                shooter.setVelocity(-1050);
-                setPathState(18);
-                break;
-            case 18:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(19);
-                }
-                break;
-            case 19:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    intake.setPower(0);
-                    shooterSpeed = -1050;
-                    firstBallSpeed = -1050;
-                    startShooting();
-                    setPathState(20);
-                }
-                break;
-            case 20:
-                if (!inShoot) {
-                    setPathState(21);
-                }
-                break;
-            case 21:
-                follower.followPath(paths.Path8);
-                setPathState(22);
-                break;
-            case 22:
-                if (!follower.isBusy()) {
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
-                    pathTimer.resetTimer();
-                    setPathState(23);
-                }
-                break;
-            case 23:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path9, 0.6, true);
-                    setPathState(24);
-                }
-                break;
-            case 24:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(25);
-                }
-                break;
-            case 25:
-                if (pathTimer.getElapsedTimeSeconds() > 0.5) {
-                    setPathState(26);
-                }
-                break;
-            case 26:
-                follower.followPath(paths.Path10);
-                shooter.setVelocity(-1050);
-                setPathState(27);
-                break;
-            case 27:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(28);
-                }
-                break;
-            case 28:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    intake.setPower(0);
-                    shooterSpeed = -1050;
-                    firstBallSpeed = -1050;
-                    startShooting();
-                    setPathState(29);
-                }
-                break;
-            case 29:
-                if (!inShoot) {
-                    setPathState(30);
-                }
-                break;
-            case 30:
-                follower.followPath(paths.Path11);
-                setPathState(31);
-                break;
-            case 31:
-                if (!follower.isBusy()) {
-                    intake.setPower(-0.9);
-                    wheel.setPower(1);
-                    pathTimer.resetTimer();
-                    setPathState(32);
-                }
-                break;
-            case 32:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path12, 0.6, true);
-                    setPathState(33);
-                }
-                break;
-            case 33:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(34);
-                }
-                break;
-            case 34:
-                if (pathTimer.getElapsedTimeSeconds() > 0.5) {
-                    setPathState(35);
-                }
-                break;
-            case 35:
-                follower.followPath(paths.Path13);
-                shooter.setVelocity(-1050);
-                setPathState(36);
-                break;
-            case 36:
-                if (!follower.isBusy()) {
-                    pathTimer.resetTimer();
-                    setPathState(37);
-                }
-                break;
-            case 37:
-                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    intake.setPower(0);
-                    shooterSpeed = -1050;
-                    firstBallSpeed = -1050;
-                    startShooting();
-                    setPathState(38);
-                }
-                break;
-            case 38:
                 if (!inShoot) {
                     setPathState(-1);
                 }
@@ -519,7 +225,6 @@ public class RedAutoFar15 extends OpMode {
             shootSequenceTimer.reset();
 
             intake.setPower(-0.9);
-            wheel.setPower(1);
 
             shootingOrder = 0;
 
@@ -609,7 +314,6 @@ public class RedAutoFar15 extends OpMode {
                 if (shootSequenceTimer.milliseconds() > 500) {
                     front.setPosition(0);
                     intake.setPower(0);
-                    wheel.setPower(0);
                     if (isFirstShoot) {
                         isFirstShoot = false;
                         keepShooterWarmed = true;
@@ -675,7 +379,6 @@ public class RedAutoFar15 extends OpMode {
                 if (shootSequenceTimer.milliseconds() > 800) {
                     back.setPosition(0);
                     intake.setPower(0);
-                    wheel.setPower(0);
                     if (isFirstShoot) {
                         isFirstShoot = false;
                         keepShooterWarmed = true;
@@ -741,7 +444,6 @@ public class RedAutoFar15 extends OpMode {
                 if (shootSequenceTimer.milliseconds() > 800) {
                     middle.setPosition(0);
                     intake.setPower(0);
-                    wheel.setPower(0);
                     if (isFirstShoot) {
                         isFirstShoot = false;
                         keepShooterWarmed = true;
@@ -807,7 +509,6 @@ public class RedAutoFar15 extends OpMode {
                 if (shootSequenceTimer.milliseconds() > 800) {
                     middle.setPosition(0);
                     intake.setPower(0);
-                    wheel.setPower(0);
                     if (isFirstShoot) {
                         isFirstShoot = false;
                         keepShooterWarmed = true;

@@ -8,14 +8,14 @@ import com.qualcomm.robotcore.hardware.Servo;
  * This is a utility program to find the position of a servo
  * add the name of the servo to the servoNames array
  * then run the program
- * use dpad left & right to select the servo
+ * use dpad left & right to select the ,m
  * use dpad up & down for fine control
  * use left stick up & down for coarse control
  * use left & right bumper to change the increment multiplier of dpad
  */
 @TeleOp
 public class FindServoPosition extends OpMode {
-    String[] servoNames ={"linkage", "front", "middle", "back"};
+    String[] servoNames ={"gate"};
     Servo[] servos = {};
     int selectedServo = 0;
     int incrementMultiplier = 1;
