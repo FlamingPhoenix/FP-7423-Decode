@@ -102,7 +102,7 @@ public class ShootQueue {
                 if(newPos == null) {
                     return; // Just in case, should never happen due to isEmpty check
                 }
-                if(newPos == POS.RESET){
+                if(newPos == POS.RESET){ // skip linkage; go straight to reset
                     state = 3;
                     return;
                 }

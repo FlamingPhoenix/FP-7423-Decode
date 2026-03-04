@@ -3,29 +3,47 @@ package org.firstinspires.ftc.teamcode.utility;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class DualColorHandler implements ColorHandler {
-    ColorSensor backc1, backc2, middlec1, middlec2, frontc1, frontc2;
-    
-    public DualColorHandler(HardwareMap hardwareMap) {
-        ColorSensor backc1 = hardwareMap.get(ColorSensor.class, "backc1");
-        ColorSensor backc2 = hardwareMap.get(ColorSensor.class, "backc2");
-        ColorSensor middlec1 = hardwareMap.get(ColorSensor.class, "middlec1");
-        ColorSensor middlec2 = hardwareMap.get(ColorSensor.class, "middlec2");
-        ColorSensor frontc1 = hardwareMap.get(ColorSensor.class, "frontc1");
-        ColorSensor frontc2 = hardwareMap.get(ColorSensor.class, "frontc2");
+    private static final long CONFIDENCE_WINDOW_MS = 500;
 
+    private final ColorSensor backc1;
+    private final ColorSensor backc2;
+    private final ColorSensor middlec1;
+    private final ColorSensor middlec2;
+    private final ColorSensor frontc1;
+    private final ColorSensor frontc2;
+    private final MajorityWindow majorityWindow;
+
+    public DualColorHandler(HardwareMap hardwareMap) {
+        this.backc1 = hardwareMap.get(ColorSensor.class, "backc1");
+        this.backc2 = hardwareMap.get(ColorSensor.class, "backc2");
+        this.middlec1 = hardwareMap.get(ColorSensor.class, "middlec1");
+        this.middlec2 = hardwareMap.get(ColorSensor.class, "middlec2");
+        this.frontc1 = hardwareMap.get(ColorSensor.class, "frontc1");
+        this.frontc2 = hardwareMap.get(ColorSensor.class, "frontc2");
+        majorityWindow = new MajorityWindow(CONFIDENCE_WINDOW_MS);
     }
 
     @Override
     public BallOrder detectBallOrder() {
+        BallOrder rawOrder = detectRawBallOrder();
+        return majorityWindow.update(rawOrder);
+    }
+
+    @Override
+    public BallOrder detectRawBallOrder() {
         BallColor backColor1 = detectBallColor(backc1);
         BallColor backColor2 = detectBallColor(backc2);
         BallColor middleColor1 = detectBallColor(middlec1);
         BallColor middleColor2 = detectBallColor(middlec2);
         BallColor frontColor1 = detectBallColor(frontc1);
         BallColor frontColor2 = detectBallColor(frontc2);
-        // take whichever color is not UNKNOWN for each position
+        // Pick the first sensor that produces a known color for each position.
         BallColor backColor = (backColor1 != BallColor.UNKNOWN) ? backColor1 : backColor2;
         BallColor middleColor = (middleColor1 != BallColor.UNKNOWN) ? middleColor1 : middleColor2;
         BallColor frontColor = (frontColor1 != BallColor.UNKNOWN) ? frontColor1 : frontColor2;
@@ -48,5 +66,94 @@ public class DualColorHandler implements ColorHandler {
         }
 
         return BallColor.UNKNOWN;
+    }
+
+    private static class MajorityWindow {
+        private final ElapsedTime elapsedTime = new ElapsedTime();
+        private final long windowMs;
+        private final Deque<StampedBallOrder> samples = new ArrayDeque<>();
+
+        private MajorityWindow(long windowMs) {
+            this.windowMs = Math.max(1, windowMs);
+            elapsedTime.reset();
+        }
+
+        private BallOrder update(BallOrder rawOrder) {
+            if (rawOrder == null) {
+                return new BallOrder(BallColor.UNKNOWN, BallColor.UNKNOWN, BallColor.UNKNOWN);
+            }
+
+            long nowMs = (long) elapsedTime.milliseconds();
+            samples.addLast(new StampedBallOrder(nowMs, rawOrder));
+            pruneOldSamples(nowMs);
+
+            return new BallOrder(
+                    resolveMajority(Position.FRONT),
+                    resolveMajority(Position.MIDDLE),
+                    resolveMajority(Position.BACK)
+            );
+        }
+
+        private void pruneOldSamples(long nowMs) {
+            long minTimestamp = nowMs - windowMs;
+            while (!samples.isEmpty() && samples.peekFirst().timestampMs < minTimestamp) {
+                samples.removeFirst();
+            }
+        }
+
+        private BallColor resolveMajority(Position position) {
+            int greenCount = 0;
+            int purpleCount = 0;
+
+            for (StampedBallOrder sample : samples) {
+                BallColor color;
+                switch (position) {
+                    case FRONT:
+                        color = sample.order.front;
+                        break;
+                    case MIDDLE:
+                        color = sample.order.middle;
+                        break;
+                    case BACK:
+                        color = sample.order.back;
+                        break;
+                    default:
+                        color = BallColor.UNKNOWN;
+                        break;
+                }
+
+                if (color == BallColor.GREEN) {
+                    greenCount++;
+                } else if (color == BallColor.PURPLE) {
+                    purpleCount++;
+                }
+            }
+
+            if (greenCount > purpleCount) {
+                return BallColor.GREEN;
+            }
+
+            if (purpleCount > greenCount) {
+                return BallColor.PURPLE;
+            }
+
+            return BallColor.UNKNOWN;
+        }
+    }
+
+    private enum Position {
+        FRONT,
+        MIDDLE,
+        BACK
+    }
+
+    private static class StampedBallOrder {
+        private final long timestampMs;
+        private final BallOrder order;
+
+        private StampedBallOrder(long timestampMs, BallOrder order) {
+            this.timestampMs = timestampMs;
+            this.order = order;
+        }
     }
 }
