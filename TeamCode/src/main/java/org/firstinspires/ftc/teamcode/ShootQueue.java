@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 import org.firstinspires.ftc.teamcode.utility.POS;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Queue;
 
 @Configurable
@@ -47,9 +48,7 @@ public class ShootQueue {
         queue.add(position);
     }
     public void addMultiple(POS... positions) {
-        for(POS pos : positions) {
-            queue.add(pos);
-        }
+        queue.addAll(Arrays.asList(positions));
     }
     public void addRapid(){
         queue.add(POS.BACK);
