@@ -18,6 +18,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
+import org.firstinspires.ftc.teamcode.utility.LEDHandler;
+import org.firstinspires.ftc.teamcode.utility.BallColor;
+import org.firstinspires.ftc.teamcode.utility.BallOrder;
 import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 
 @TeleOp
@@ -37,6 +40,8 @@ public class NewTeleOpTest extends OpMode{
     public static double ball1mult = 1;
     public static double ball2mult = 1;
     public static double ball3mult = 1;
+    LEDHandler ledHandler;
+
     //THE REST
     RevBlinkinLedDriver blinkin;
     ColorSensor middlec, backc, frontc;
@@ -70,14 +75,12 @@ public class NewTeleOpTest extends OpMode{
 
     boolean lastUp, lastDown, lastLeft, lastRight, gateClosed = false;
 
-    private enum BallColor {
-        GREEN, PURPLE, UNKNOWN
-    }
 
     private BallColor detectBallColor(ColorSensor sensor) {
         int red = sensor.red();
         int green = sensor.green();
         int blue = sensor.blue();
+
 
         // Green ball detection: high green, lower red and blue
         if (green > red && green > blue && green > 100) {
@@ -98,15 +101,14 @@ public class NewTeleOpTest extends OpMode{
         drive = new FieldCentricDrivePinPoint(hardwareMap);
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
-        /*blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
-        middlec = hardwareMap.get(ColorSensor.class, "middlec");
-        backc = hardwareMap.get(ColorSensor.class, "backc");
-        frontc = hardwareMap.get(ColorSensor.class, "frontc");*/
+        middlec = hardwareMap.get(ColorSensor.class, "middlec1");
+        backc = hardwareMap.get(ColorSensor.class, "backc1");
+        frontc = hardwareMap.get(ColorSensor.class, "frontc1");
         front = hardwareMap.servo.get("front");
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
-        gate = hardwareMap.servo.get("gate");
+        gate = hardwareMap.servo.get("lock");
         try {
             limelight = hardwareMap.get(Limelight3A.class, "limelight");
             limelight.setPollRateHz(100);
@@ -119,6 +121,8 @@ public class NewTeleOpTest extends OpMode{
         autoAligner = new AutoAlign(drive,alignkp,strafeMultiplier);
         autoAligner.setTargetOffset(targetOffset);
         shooterCalculator = new ShootCalculator(0,10,72);
+
+        ledHandler = new LEDHandler(hardwareMap);
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -192,6 +196,7 @@ public class NewTeleOpTest extends OpMode{
             //Limelight logic. GAMEPAD BUTTON FOR ENABLE AUTOALIGN MUST PRECEDE THIS
             LLResult result = limelight.getLatestResult();
             shooterSpeed = shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation;
+            telemetry.addData("Shooter speed: ", String.format("%.1f", shooterSpeed));
             if (result != null && result.isValid()) {
                 ty = result.getTy();
                 tx = result.getTx();
@@ -228,14 +233,10 @@ public class NewTeleOpTest extends OpMode{
                 (backColor == BallColor.UNKNOWN) &&
                 (frontColor == BallColor.UNKNOWN);
 
-        // Set LED color based on sensor readings
-        if (middleColor == BallColor.GREEN && backColor == BallColor.GREEN && frontColor == BallColor.GREEN) {
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
-        } else if (middleColor == BallColor.PURPLE && backColor == BallColor.PURPLE && frontColor == BallColor.PURPLE) {
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.VIOLET);
-        } else {
-            blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-        }
+        // Create BallOrder from sensor readings and update LEDs
+        BallOrder currentBallOrder = new BallOrder(frontColor, middleColor, backColor);
+        ledHandler.ballColors(currentBallOrder);
+        ledHandler.setColorsFromStatic();
 
         if (allThreeBallsDetected) {
             shooterAutoActive = true;
@@ -248,7 +249,7 @@ public class NewTeleOpTest extends OpMode{
         telemetry.addData("Back Sensor", backColor);
         telemetry.addData("Front Sensor", frontColor);
         telemetry.addData("All Three Balls Detected", allThreeBallsDetected);
-*/
+        */
         // Add telemetry for debugging drive issues
         telemetry.addData("IMU Heading (deg)", Math.toDegrees(drive.getHeading()));
 //        telemetry.addData("Left Stick X", gamepad1.left_stick_x);

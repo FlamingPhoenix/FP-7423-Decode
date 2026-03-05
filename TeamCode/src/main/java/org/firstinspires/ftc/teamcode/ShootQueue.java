@@ -143,7 +143,7 @@ public class ShootQueue {
                         middle.setPosition(LIFTERUP);
                         break;
                     case BACK:
-                        back.setPosition(LIFTERUP);
+                        back.setPosition(LIFTERUP+0.35);
                         break;
                     case RESET:
                         break; // should never happen, reset is handled separately
@@ -174,7 +174,7 @@ public class ShootQueue {
                         middle.setPosition(pos);
                         break;
                     case BACK:
-                        back.setPosition(pos);
+                        back.setPosition(0.35);
                         break;
                     case RESET:
                         break;
@@ -186,7 +186,7 @@ public class ShootQueue {
             case 3:
                 front.setPosition(LIFTERDOWN);
                 middle.setPosition(LIFTERDOWN);
-                back.setPosition(LIFTERDOWN);
+                back.setPosition(LIFTERDOWN+0.35);
                 state = 0;
 
                 break;

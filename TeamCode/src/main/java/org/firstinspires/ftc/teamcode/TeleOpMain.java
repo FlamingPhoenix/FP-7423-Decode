@@ -38,7 +38,7 @@ public class TeleOpMain extends OpMode {
     public static double KI = 0;
     public static double KD = 0.2;
     public static double KF = 15;
-    public static double alignkp;
+    public static double alignkp = -0.04;
 
 
     //drive initialization
@@ -169,8 +169,8 @@ public class TeleOpMain extends OpMode {
                 //auto intake align????
                 //once all 3 detected (or manual override) clear all shoot queue and move to READY
 
-                if(gamepad1.left_trigger > 0.2){ //power intake, could be constantly on
-                intake.setPower(POSCONFIG.INTAKEPOWER);
+                if(gamepad1.right_bumper){ //power intake, could be constantly on
+                intake.setPower(-POSCONFIG.INTAKEPOWER);
                 } else { intake.setPower(0); }
 
                 ballOrder = colorHandler.detectBallOrder(); //ball leds
@@ -178,7 +178,7 @@ public class TeleOpMain extends OpMode {
 
 
                 //move on case
-                if(confidenceFilter.update(ballOrder.isFull()) || longDebouncer.update("gamepad1.b", gamepad1.b)){
+                if(longDebouncer.update("gamepad1.b", gamepad1.b)){
                     // clean shooter
                     shootQueue.clearAndReset();
                     
@@ -322,7 +322,7 @@ public class TeleOpMain extends OpMode {
                 //disengage lock
                 ledHandler.setALLColor(LEDHandler.LED_OFF); // turn off LEDs when idle
                 shooter.setVelocity(0); //stop shooter from revving
-                if(gamepad1.left_trigger > 0.6){ //higher threshold to prevent accidents
+                if(gamepad1.right_bumper){ //higher threshold to prevent accidents
                     //move on to intaking
                     intake.setPower(POSCONFIG.INTAKEPOWER);
                     shootQueue.linkageBack(); // go back to give space for intake
@@ -363,7 +363,7 @@ public class TeleOpMain extends OpMode {
         }
         
         //drive slow mode
-        if(gamepad1.right_bumper){ multiplier = 0.5; } else { multiplier = 1.0; }
+        if(gamepad1.left_trigger>0.2){ multiplier = 0.5; } else { multiplier = 1.0; }
 
         //lock override
         if(gamepad2.left_bumper) { lock.setPosition(POSCONFIG.LOCKDISENGAGED); } else

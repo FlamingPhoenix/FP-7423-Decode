@@ -161,7 +161,7 @@ public class FieldCentricDrivePinPoint {
     // take the current heading and set it as the new heading, effectively resetting the heading to 0 without actually resetting the IMU
     public void resetIMU(){
         if(useIMU) {
-            double currentHeading = pinpointLocalizer.getPose().getHeading();
+            double currentHeading = getHeading();
             IMUOffset += currentHeading;
         }
     }

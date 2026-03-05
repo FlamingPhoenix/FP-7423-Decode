@@ -116,8 +116,16 @@ public class blueFarAuto extends OpMode {
 
     @Override
     public void start() {
+        // Initialize all motors to safe states
+        intake.setPower(0);  // Stop intake initially
         shooter.setVelocity(-1100);
+
+        // Initialize servo positions to safe states
         linkage.setPosition(0.3567);
+        front.setPosition(0);
+        back.setPosition(0);
+        middle.setPosition(0);
+
         setPathState(0);
     }
 
