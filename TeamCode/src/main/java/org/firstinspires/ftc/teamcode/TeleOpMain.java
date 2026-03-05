@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Queue;
-
+import java.util.ArrayDeque;
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 // import org.firstinspires.ftc.teamcode.utility.BallColor;
@@ -66,7 +66,7 @@ public class TeleOpMain extends OpMode {
     LEDHandler ledHandler;
     Debounce debouncer = new Debounce(200); //quick debounce time for button presses
     Debounce longDebouncer = new Debounce(600); //slow debounce time for state changes
-    ConfidenceFilter confidenceFilter = new ConfidenceFilter(100, 0.8); // filter for color detection confidence; requires 5 consistent readings with at least 80% confidence to change detected color
+    ConfidenceFilter confidenceFilter = new ConfidenceFilter(100, 0.8); // filter for color detection confidence;
 
     ShootCalculator shooterCalculator;
     //variables
@@ -77,7 +77,6 @@ public class TeleOpMain extends OpMode {
     double multiplierCompensation = 1.0;
     double shooterTPS = -1050;
     double ta, tx, ty,distanceToTarget;
-    boolean rapidMode = true;
 
     int pickedOrders = 0;
     BallOrder ballOrder;
@@ -148,7 +147,7 @@ public class TeleOpMain extends OpMode {
         // ===================================
         // LIMELIGHT + SHOOT CALCULATOR
         if(limeLightWorking) {
-            autoAlignActive = gamepad1.right_trigger > 0.2; // TODO: SET CONTROL (replace false with button)
+            autoAlignActive = gamepad1.right_trigger > 0.2;
             LLResult result = limelight.getLatestResult();
             shooterTPS = shooterCalculator.calculateRPMForTele(result, positionCompensation) * multiplierCompensation;
             if (result != null && result.isValid()) { 
@@ -182,15 +181,8 @@ public class TeleOpMain extends OpMode {
                     // clean shooter
                     shootQueue.clearAndReset();
                     
-                    if(rapidMode){
-                        // in rapid mode, skip selection and immediately rapid
-                        shootQueue.addRapid();
-                        currentState = STATE.SHOOTING;
-                        lock.setPosition(POSCONFIG.LOCKENGAGED); //engage lock to hold balls in place during rapid fire
-                    } else {
-                        //otherwise, move to ready state to allow for shoot order selection
-                        currentState = STATE.READY;
-                    }
+                    //otherwise, move to ready state to allow for shoot order selection
+                    currentState = STATE.READY;
                     //clean color order and stop intake
                     colorOrder.clear();
                     intake.setPower(0);
@@ -282,14 +274,15 @@ public class TeleOpMain extends OpMode {
 
 
 
-                if(longDebouncer.update("gamepad1.b", gamepad1.b)){ // || pickedOrders >= 3
+                if(longDebouncer.update("gamepad1.b", gamepad1.b) || debouncer.update("gamepad2.y", gamepad2.y)){ // advance on gp1 override or gp2 progress
                     if(pickedOrders == 0){
                         //if no orders picked, do rapid
                         shootQueue.addRapid();
                         currentState = STATE.SHOOTING;
                         lock.setPosition(POSCONFIG.LOCKENGAGED); //engage lock to hold balls
                     } else {
-                    currentState = STATE.CALCULATING;
+                        //otherwise, calculate order
+                        currentState = STATE.CALCULATING;
                     }
                 }
 
@@ -375,9 +368,6 @@ public class TeleOpMain extends OpMode {
         if(gamepad2.left_bumper) { lock.setPosition(POSCONFIG.LOCKDISENGAGED); } else
         if(gamepad2.left_trigger > 0.4){ lock.setPosition(POSCONFIG.LOCKENGAGED); }
 
-        //set rapid mode
-        if(gamepad2.right_bumper){ rapidMode = true; } else
-        if(gamepad2.right_trigger > 0.4){ rapidMode = false; }
 
 
 
