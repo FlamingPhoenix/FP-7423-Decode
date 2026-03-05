@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Queue;
@@ -85,7 +86,7 @@ public class TeleOpMain extends OpMode {
     public void init() {
         //hardware init
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, KP, KI, KD, KF);
+        shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(KP,KI,KD,KF));
         intake = hardwareMap.get(DcMotor.class, "intake");
         lock = hardwareMap.get(Servo.class, "lock");
         
