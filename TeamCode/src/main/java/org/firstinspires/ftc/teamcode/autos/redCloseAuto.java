@@ -7,6 +7,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -50,8 +51,8 @@ public class redCloseAuto extends OpMode {
     boolean inShoot = false;
     int shootSequenceState = 0;
     ElapsedTime shootSequenceTimer = new ElapsedTime();
-    double shooterSpeed = -1600;
-    double firstBallSpeed = -1600; // Slower speed for first ball
+    double shooterSpeed = -1620;
+    double firstBallSpeed = -1620; // Slower speed for first ball
     int shootingOrder = 0; // 0 = normal (back->middle->front), 1 = reverse (front->middle->back), 2 = middle->back->front
     int storedShootingOrder = 0; // Store AprilTag order for second shooting sequence
     boolean isFirstShoot = true; // Track if this is the first shooting sequence
@@ -133,54 +134,110 @@ public class redCloseAuto extends OpMode {
     }
 
     public static class Paths {
-        public PathChain Path1;
-        public PathChain Path2;
-        public PathChain Path3;
-        public PathChain Path4;
+        public PathChain Path1; // go back to shoot first
+        public PathChain Path2; // move to balls
+        public PathChain Path3; // intake balls
+        public PathChain Path4; // go shoot
+        public PathChain Path5; // open gate
+        public PathChain Path6; // intake gate
+        public PathChain Path7; // wiggle gate
+        public PathChain Path8; // go shoot
 
         public Paths(Follower follower) {
-            Path1 = follower.pathBuilder()
-                    .addPath(
+            Path1 = follower.pathBuilder().addPath(
                             new BezierLine(
                                     new Pose(121.872, 122.018),
+
                                     new Pose(97.465, 96.556)
                             )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(48))
+                    ).setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(48))
+
                     .build();
 
-            Path2 = follower.pathBuilder()
-                    .addPath(
+            Path2 = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(97.465, 96.556),
-                                    new Pose(79.413, 76.353),
-                                    new Pose(100.000, 60)
+                                    new Pose(87.004, 62.119),
+                                    new Pose(97.153, 61.186)
                             )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+                    ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+
                     .build();
 
-            Path3 = follower.pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(100.000, 60.000),
-                                    new Pose(136.556, 56.265),
-                                    new Pose(126.134, 64.785)
+            Path3 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(97.153, 61.186),
+
+                                    new Pose(131.580, 60.000)
                             )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+
                     .build();
 
-            Path4 = follower.pathBuilder()
-                    .addPath(
+            Path4 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(126.134, 64.785),
+                                    new Pose(131.580, 60.000),
                                     new Pose(84.790, 60.526),
                                     new Pose(88.854, 86.565)
                             )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
+                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
+
                     .build();
+
+            Path5 = follower.pathBuilder().addPath(
+                            new BezierCurve(
+                                    new Pose(88.854, 86.565),
+                                    new Pose(115.901, 58.566),
+                                    new Pose(127.394, 60.257)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+
+                    .build();
+
+            Path6 = follower.pathBuilder().addPath(
+                            new BezierCurve(
+                                    new Pose(127.394, 60.257),
+                                    new Pose(124.072, 58.035),
+                                    new Pose(132.376, 52.764)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(42))
+
+                    .build();
+            Path7 = follower.pathBuilder().addPath(
+                            new BezierCurve(
+                                    new Pose(132.376, 52.764),
+                                    new Pose(136.341, 59.832),
+                                    new Pose(129.206, 51.054),
+                                    new Pose(132.376, 53.038)
+                            )
+                    ).setConstantHeadingInterpolation(Math.toRadians(40))
+
+                    .build();
+            Path8 = follower.pathBuilder().addPath(
+                            new BezierCurve(
+                                    new Pose(132.376, 53.038),
+                                    new Pose(83.079, 76.390),
+                                    new Pose(88.820, 86.252)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(45))
+
+                    .build();
+
+
+//            Path5.setHeadingInterpolator(
+//                    HeadingInterpolator.piecewise(
+//                            new HeadingInterpolator.PiecewiseNode(
+//                                    0,
+//                                    0.5,
+//                                    HeadingInterpolator.linear(Math.toRadians(48),0)
+//                            ),
+//                            new HeadingInterpolator.PiecewiseNode(
+//                                    0.5,
+//                                    1.0,
+//                                    HeadingInterpolator.linear(0,Math.toRadians(30))
+//                            )
+//                    )
+//            );
         }
     }
 
@@ -208,14 +265,14 @@ public class redCloseAuto extends OpMode {
                 break;
             case 4:
                 if (!follower.isBusy()) {
-                    intake.setPower(-0.9);
+                    intake.setPower(-1);
                     pathTimer.resetTimer();
                     setPathState(5);
                 }
                 break;
             case 5:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path3, 0.6, true);
+                    follower.followPath(paths.Path3, 0.4, true);
                     setPathState(6);
                 }
                 break;
@@ -244,13 +301,55 @@ public class redCloseAuto extends OpMode {
             case 10:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
                     intake.setPower(0);
-                    shooterSpeed = -1600;
-                    firstBallSpeed = -1600;
+                    shooterSpeed = -1800;
+                    firstBallSpeed = -1800;
                     startShooting();
                     setPathState(11);
                 }
                 break;
             case 11:
+                if(!inShoot){
+                    setPathState(12);
+                }
+                break;
+            case 12:
+                follower.followPath(paths.Path5);
+                setPathState(13);
+                break;
+            case 13:
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds() > 0.2) {
+                        follower.followPath(paths.Path6);
+                        intake.setPower(-0.9);
+                        setPathState(14);
+                    }
+                }
+            case 14:
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds()>1) {
+                        follower.followPath(paths.Path7, 0.4, true);
+                        setPathState(15);
+                    }
+                }
+                break;
+            case 15:
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds()>2) {
+                        intake.setPower(-0.3);
+                        shooter.setVelocity(shooterSpeed);
+                        follower.followPath(paths.Path8);
+                        setPathState(16);
+                    }
+                }
+                break;
+            case 16:
+                if(!follower.isBusy()){
+                    pathTimer.resetTimer();
+                    startShooting();
+                    setPathState(17);
+                }
+                break;
+            case 17:
                 if (!inShoot) {
                     setPathState(-1);
                 }

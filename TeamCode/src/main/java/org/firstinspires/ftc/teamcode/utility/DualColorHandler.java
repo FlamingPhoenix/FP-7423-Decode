@@ -1,8 +1,15 @@
 package org.firstinspires.ftc.teamcode.utility;
 //import javax.swing.colorchooser.ColorSelectionModel;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
+
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.ArrayDeque;
@@ -37,12 +44,19 @@ public class DualColorHandler implements ColorHandler {
 
     @Override
     public BallOrder detectRawBallOrder() {
-        BallColor backColor1 = detectBallColor(backc1);
-        BallColor backColor2 = detectBallColor(backc2);
-        BallColor middleColor1 = detectBallColor(middlec1);
-        BallColor middleColor2 = detectBallColor(middlec2);
-        BallColor frontColor1 = detectBallColor(frontc1);
-        BallColor frontColor2 = detectBallColor(frontc2);
+//        BallColor backColor1 = detectBallColor(backc1);
+//        BallColor backColor2 = detectBallColor(backc2);
+//        BallColor middleColor1 = detectBallColor(middlec1);
+//        BallColor middleColor2 = detectBallColor(middlec2);
+//        BallColor frontColor1 = detectBallColor(frontc1);
+//        BallColor frontColor2 = detectBallColor(frontc2);
+        BallColor backColor1 = detectBallColor2(backc1);
+        BallColor backColor2 = detectBallColor2(backc2);
+        BallColor middleColor1 = detectBallColor2(middlec1);
+        BallColor middleColor2 = detectBallColor2(middlec2);
+        BallColor frontColor1 = detectBallColor2(frontc1);
+        BallColor frontColor2 = detectBallColor2(frontc2);
+
         // Pick the first sensor that produces a known color for each position.
         BallColor backColor = (backColor1 != BallColor.UNKNOWN) ? backColor1 : backColor2;
         BallColor middleColor = (middleColor1 != BallColor.UNKNOWN) ? middleColor1 : middleColor2;
@@ -67,6 +81,37 @@ public class DualColorHandler implements ColorHandler {
 
         return BallColor.UNKNOWN;
     }
+
+    private BallColor detectBallColor2(ColorSensor sensor){
+        NormalizedRGBA rgba = ((NormalizedColorSensor) sensor).getNormalizedColors();
+        float[] hsvvalues =  new float[3];
+        Color.colorToHSV(rgba.toColor(),hsvvalues);
+        double[] distances = {
+                circularDistance(hsvvalues[0], PGN[0]),
+                circularDistance(hsvvalues[0], PGN[1]),
+                circularDistance(hsvvalues[0], PGN[2])
+        };
+        int minidx = 2;
+        for (int j = 0; j < 3; j++) {
+            if (distances[j] < distances[minidx]) {
+                minidx = j;
+            }
+        }
+        switch (minidx){
+            case 0:
+                return BallColor.PURPLE;
+            case 1:
+                return BallColor.GREEN;
+            default:
+                return BallColor.UNKNOWN;
+        }
+    }
+    private double circularDistance(double a, double b){
+        double diff = abs(a-b);
+        return min(diff,360-diff);
+    }
+    final private int[] PGN = {260,168,34};
+
 
     private static class MajorityWindow {
         private final ElapsedTime elapsedTime = new ElapsedTime();
