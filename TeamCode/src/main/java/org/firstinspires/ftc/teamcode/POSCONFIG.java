@@ -13,8 +13,8 @@ public class POSCONFIG {
 
 
     //TODO: Configure values
-    public static double LOCKENGAGED;
-    public static double LOCKDISENGAGED;
+    public static double LOCKENGAGED = 0.5;
+    public static double LOCKDISENGAGED = 0.8;
     public static double LIFTERUP = 0.4;
     public static double LIFTERDOWN = 0;
     public static double LIFTERBLOCKING = 0;
