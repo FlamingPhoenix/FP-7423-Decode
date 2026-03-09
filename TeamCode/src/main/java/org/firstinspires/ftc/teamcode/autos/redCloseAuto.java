@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import java.util.List;
 
 import org.firstinspires.ftc.teamcode.POSCONFIG;
 import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
@@ -60,8 +61,15 @@ public class redCloseAuto extends OpMode {
     boolean isFirstShoot = true; // Track if this is the first shooting sequence
     boolean keepShooterWarmed = false; // Keep shooter running at -1000 when not shooting
 
+    List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+
     @Override
     public void init() {
+        for (LynxModule hub : allHubs) {
+            //hopefully bulk reads will reduce loop time
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
@@ -105,9 +113,12 @@ public class redCloseAuto extends OpMode {
 
     @Override
     public void loop() {
-        follower.update(); // Update Pedro Pathing
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
         pathState = autonomousPathUpdate(); // Update autonomous state machine
         updateShootingSequence(); // Update shooting sequence
+        follower.update(); // Update Pedro Pathing
 
         // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
@@ -125,7 +136,7 @@ public class redCloseAuto extends OpMode {
     public void start() {
         // Initialize all motors to safe states
         intake.setPower(0);  // Stop intake initially
-        shooter.setVelocity(-1100); // Start shooter with -1100 speed for first ball
+        shooter.setVelocity(firstBallSpeed); // Start shooter with speed for first ball
 
         // Initialize servo positions to safe states
         linkage.setPosition(0.66); // Move linkage to first ball (front) position immediately
@@ -216,7 +227,6 @@ public class redCloseAuto extends OpMode {
                                     new Pose(131.376, 52.764)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(48))
-                    .setTimeoutConstraint(1000)
                     .addPath(
                             new BezierCurve(
                                     new Pose(131.376, 52.764),
@@ -225,7 +235,6 @@ public class redCloseAuto extends OpMode {
                                     new Pose(131.376, 52.764)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(40))
-                    .setTimeoutConstraint(1000)
                     .build();
 
             Path8 = follower.pathBuilder().addPath(
@@ -380,44 +389,47 @@ public class redCloseAuto extends OpMode {
                     setPathState(19);
                 }
                 break;
-            case 19: // go around
+            case 19:
                 if(!follower.isBusy()){
-                    if(pathTimer.getElapsedTimeSeconds() > 0.2) {
-                        follower.followPath(paths.Path6);
-                        intake.setPower(-0.9);
-                        setPathState(20);
-                    }
+                    pathTimer.resetTimer();
+                    setPathState(20);
                 }
                 break;
             case 20:
+                if(pathTimer.getElapsedTimeSeconds() > 0.2) { //stay for 0.2 seconds then go around
+                        follower.followPath(paths.Path6);
+                        intake.setPower(-0.9);
+                        setPathState(21);
+                    }
+            case 21:
                 if(!follower.isBusy()){
                     pathTimer.resetTimer();
-                    setPathState(21);
-                }
-                break;
-            case 21: // wiggle intake
-                if(pathTimer.getElapsedTimeSeconds()>1) {
-                    follower.followPath(paths.Path7);
                     setPathState(22);
                 }
                 break;
-            case 22: // go to shoot
+            case 22: // wiggle intake
+                if(pathTimer.getElapsedTimeSeconds()>1) { // stay for 1 second then wiggle
+                    follower.followPath(paths.Path7);
+                    setPathState(23);
+                }
+                break;
+            case 23: // go to shoot
                 if(!follower.isBusy()){
                     intake.setPower(-0.3);
                     shooter.setVelocity(shooterSpeed);
                     follower.followPath(paths.Path8);
-                    setPathState(23);
+                    setPathState(24);
                 }
                 break;
-            case 23: // start shooting
+            case 24: // start shooting
                 if(follower.getCurrentTValue()>0.8){
                     lock.setPosition(POSCONFIG.LOCKENGAGED);
                     pathTimer.resetTimer();
                     startShooting();
-                    setPathState(24);
+                    setPathState(25);
                 }
                 break;
-            case 24:
+            case 25:
                 if (!inShoot && !follower.isBusy()) {
                     lock.setPosition(POSCONFIG.LOCKDISENGAGED);
                     setPathState(-1);
