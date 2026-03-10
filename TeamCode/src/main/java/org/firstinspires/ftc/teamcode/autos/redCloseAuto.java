@@ -156,7 +156,8 @@ public class redCloseAuto extends OpMode {
         public PathChain Path6; // intake gate
         public PathChain Path7; // wiggle gate
         public PathChain Path8; // go shoot
-        // cycle back to 5-8
+        public PathChain Path9; // intake path
+        public PathChain Path10; // shoot path
 
         public Paths(Follower follower) {
             Path1 = follower.pathBuilder().addPath(
@@ -247,6 +248,26 @@ public class redCloseAuto extends OpMode {
 
                     .build();
 
+            Path9 = follower.pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(91.700, 82.500),
+                                    new Pose(103.724, 75.560),
+                                    new Pose(125.000, 84.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+                    .build();
+
+            Path10 = follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(125.000, 84.000),
+                                    new Pose(96.970, 96.389)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
+                    .build();
 
 //            Path5.setHeadingInterpolator(
 //                    HeadingInterpolator.piecewise(
@@ -429,10 +450,101 @@ public class redCloseAuto extends OpMode {
                     setPathState(25);
                 }
                 break;
+            case 17:
+                if (!inShoot) {
+                    setPathState(18); // Start second cycle
+                }
+                break;
+            // Second cycle of paths 6-8
+            case 18: // get gate (second cycle)
+                follower.followPath(paths.Path5);
+                setPathState(19);
+                break;
+            case 19: // go around (second cycle)
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds() > 0.2) {
+                        follower.followPath(paths.Path6);
+                        intake.setPower(-0.9);
+                        setPathState(20);
+                    }
+                }
+                break;
+            case 20: // wiggle (second cycle)
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds()>1) {
+                        follower.followPath(paths.Path7, 0.4, true);
+                        setPathState(21);
+                    }
+                }
+                break;
+            case 21: // go to shooting spot (second cycle)
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds()>2) {
+                        intake.setPower(-0.3);
+                        shooter.setVelocity(shooterSpeed);
+                        follower.followPath(paths.Path8);
+                        setPathState(22);
+                    }
+                }
+                break;
+            case 22: // shoot (second cycle)
+                if(!follower.isBusy()){
+                    pathTimer.resetTimer();
+                    startShooting();
+                    setPathState(23);
+                }
+                break;
+            case 23:
+                if (!inShoot) {
+                    setPathState(24); // Start final intake and shoot sequence
+                }
+                break;
+            // Final sequence using Path9 and Path10
+            case 24: // intake path (similar to path3)
+                intake.setPower(-1);
+                pathTimer.resetTimer();
+                setPathState(25);
+                break;
             case 25:
-                if (!inShoot && !follower.isBusy()) {
-                    lock.setPosition(POSCONFIG.LOCKDISENGAGED);
-                    setPathState(-1);
+                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
+                    follower.followPath(paths.Path9, 0.4, true);
+                    setPathState(26);
+                }
+                break;
+            case 26:
+                if (!follower.isBusy()) {
+                    pathTimer.resetTimer();
+                    setPathState(27);
+                }
+                break;
+            case 27:
+                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
+                    setPathState(28);
+                }
+                break;
+            case 28: // shoot path (similar to path4)
+                follower.followPath(paths.Path10);
+                shooter.setVelocity(-1600);
+                setPathState(29);
+                break;
+            case 29:
+                if (!follower.isBusy()) {
+                    pathTimer.resetTimer();
+                    setPathState(30);
+                }
+                break;
+            case 30: // final shoot
+                if (pathTimer.getElapsedTimeSeconds() > 0.1) {
+                    intake.setPower(0);
+                    shooterSpeed = -1800;
+                    firstBallSpeed = -1800;
+                    startShooting();
+                    setPathState(31);
+                }
+                break;
+            case 31:
+                if (!inShoot) {
+                    setPathState(-1); // End autonomous
                 }
                 break;
         }
