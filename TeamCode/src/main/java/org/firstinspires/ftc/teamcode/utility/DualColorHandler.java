@@ -19,6 +19,7 @@ import java.util.Deque;
 public class DualColorHandler implements ColorHandler {
     public static double satThreshold = 0.2;
     public static float gain = 1.0f;
+    public static double valueThreshold = 0.0;
     private static final long CONFIDENCE_WINDOW_MS = 200;
 
     private final NormalizedColorSensor backc1;
@@ -98,7 +99,7 @@ public class DualColorHandler implements ColorHandler {
         NormalizedRGBA rgba = sensor.getNormalizedColors();
         float[] hsvvalues =  new float[3];
         Color.colorToHSV(rgba.toColor(),hsvvalues);
-        if(hsvvalues[2] < 0.1){ //if value is very low, it's probably just a dark reading rather than a purple or green ball
+        if(hsvvalues[2] < valueThreshold){ //if value is very low, it's probably just a dark reading rather than a purple or green ball
             return BallColor.UNKNOWN;
         }
         if(hsvvalues[1] < satThreshold){ //if saturation is very low, it's probably just a white reading rather than a purple or green ball
@@ -124,7 +125,8 @@ public class DualColorHandler implements ColorHandler {
                 return BallColor.UNKNOWN;
         }
     }
-    public float[][] getRawHSV(){
+    @Override
+    public float[][] getHSVValues(){
         NormalizedRGBA back1 = ((NormalizedColorSensor) backc1).getNormalizedColors();
         NormalizedRGBA back2 = ((NormalizedColorSensor) backc2).getNormalizedColors();
         NormalizedRGBA middle1 = ((NormalizedColorSensor) middlec1).getNormalizedColors();
