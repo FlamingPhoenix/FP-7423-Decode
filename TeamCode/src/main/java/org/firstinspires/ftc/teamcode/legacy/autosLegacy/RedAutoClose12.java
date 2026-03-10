@@ -24,7 +24,9 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
 import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous(name = "Red Auto Close 12", group = "Autonomous")
 @Configurable // Panels
 public class RedAutoClose12 extends OpMode {

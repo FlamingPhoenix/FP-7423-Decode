@@ -395,61 +395,6 @@ public class redCloseAuto extends OpMode {
 
                 }
                 break;
-            case 17: // shoot
-                if(follower.getCurrentTValue()>0.8){
-                    lock.setPosition(POSCONFIG.LOCKENGAGED);
-                    pathTimer.resetTimer();
-                    startShooting();
-                    setPathState(18);
-                }
-                break;
-            case 18: // get gate
-                if(!inShoot && !follower.isBusy()){
-                    lock.setPosition(POSCONFIG.LOCKDISENGAGED);
-                    follower.followPath(paths.Path5);
-                    setPathState(19);
-                }
-                break;
-            case 19:
-                if(!follower.isBusy()){
-                    pathTimer.resetTimer();
-                    setPathState(20);
-                }
-                break;
-            case 20:
-                if(pathTimer.getElapsedTimeSeconds() > 0.2) { //stay for 0.2 seconds then go around
-                        follower.followPath(paths.Path6);
-                        intake.setPower(-0.9);
-                        setPathState(21);
-                    }
-            case 21:
-                if(!follower.isBusy()){
-                    pathTimer.resetTimer();
-                    setPathState(22);
-                }
-                break;
-            case 22: // wiggle intake
-                if(pathTimer.getElapsedTimeSeconds()>1) { // stay for 1 second then wiggle
-                    follower.followPath(paths.Path7);
-                    setPathState(23);
-                }
-                break;
-            case 23: // go to shoot
-                if(!follower.isBusy()){
-                    intake.setPower(-0.3);
-                    shooter.setVelocity(shooterSpeed);
-                    follower.followPath(paths.Path8);
-                    setPathState(24);
-                }
-                break;
-            case 24: // start shooting
-                if(follower.getCurrentTValue()>0.8){
-                    lock.setPosition(POSCONFIG.LOCKENGAGED);
-                    pathTimer.resetTimer();
-                    startShooting();
-                    setPathState(25);
-                }
-                break;
             case 17:
                 if (!inShoot) {
                     setPathState(18); // Start second cycle

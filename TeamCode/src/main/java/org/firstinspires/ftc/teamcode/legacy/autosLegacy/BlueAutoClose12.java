@@ -19,12 +19,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
 import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 import org.firstinspires.ftc.teamcode.BallDetectionIntakeControl;
 
 //@Autonomous(name = "Blue Auto Close 12", group = "Autonomous")
+@Disabled
 @Configurable
 public class BlueAutoClose12 extends OpMode {
 

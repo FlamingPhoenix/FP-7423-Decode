@@ -18,8 +18,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 
+@Disabled
 @Autonomous(name = "Blue Far Steal 9", group = "Autonomous")
 @Configurable
 public class BlueFarSteal9 extends OpMode {

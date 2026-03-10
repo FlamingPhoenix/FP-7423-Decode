@@ -20,7 +20,9 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 //@Autonomous(name = "Red Auto Close 9 OOTB", group = "Autonomous")
 @Configurable
 public class RedAutoClose9OOTB extends OpMode {

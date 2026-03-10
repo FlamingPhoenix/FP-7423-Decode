@@ -7,6 +7,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 
+@Disabled
 @TeleOp
 @Configurable
 public class TeleOpMainLimeLight extends OpMode{

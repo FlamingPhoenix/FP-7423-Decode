@@ -18,7 +18,9 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 //@Autonomous(name = "Red Auto Far 15", group = "Autonomous")
 @Configurable
 public class RedAutoFar15 extends OpMode {

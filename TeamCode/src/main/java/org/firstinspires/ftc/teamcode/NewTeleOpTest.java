@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 import org.firstinspires.ftc.teamcode.utility.BallColor;
 import org.firstinspires.ftc.teamcode.utility.BallOrder;
 import org.firstinspires.ftc.teamcode.utility.ColorHandler;
+import org.firstinspires.ftc.teamcode.utility.Debounce;
 import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 
 @TeleOp
@@ -72,6 +73,7 @@ public class NewTeleOpTest extends OpMode{
     boolean isEndGame = false;
     boolean shooterAutoActive = false; // Track if shooter should be auto-powered
     ColorHandler ch;
+    Debounce debouncer = new Debounce(300); // 300 ms debounce for button presses
 
 
 
@@ -183,7 +185,7 @@ public class NewTeleOpTest extends OpMode{
             lastLeft = false;
             lastRight = false;
         }
-        if(gamepad2.x){
+        if(debouncer.update("gamepad2.x",gamepad2.x)){
             shooterCalculator.setVelocityCompensation(290);
             PersistentStorage.saveDouble(hardwareMap.appContext,"b", shooterCalculator.getVelocityCompensation());
             shooterCalculator.setVelocityMultiplier(2.19);

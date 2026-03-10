@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.legacy;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.shooter.LimeLightLocator;
 import org.firstinspires.ftc.teamcode.shooter.PerfectShooting;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrive;
 
+@Disabled
 @TeleOp(name = "TeleOpOLD")
 public class TeleOpMain extends OpMode{
     /*
