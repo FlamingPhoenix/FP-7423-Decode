@@ -14,9 +14,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-
+@Configurable
 public class DualColorHandler implements ColorHandler {
-    private static final long CONFIDENCE_WINDOW_MS = 500;
+    public static double satThreshold = 0.2;
+    public static double gain = 1.0;
+    private static final long CONFIDENCE_WINDOW_MS = 200;
 
     private final ColorSensor backc1;
     private final ColorSensor backc2;
@@ -26,6 +28,8 @@ public class DualColorHandler implements ColorHandler {
     private final ColorSensor frontc2;
     private final MajorityWindow majorityWindow;
 
+    final private int[] PGN = {260,168,34}; //hue values for purple, green, and orange (furthest hue from either)
+
     public DualColorHandler(HardwareMap hardwareMap) {
         this.backc1 = hardwareMap.get(ColorSensor.class, "backc1");
         this.backc2 = hardwareMap.get(ColorSensor.class, "backc2");
@@ -33,6 +37,13 @@ public class DualColorHandler implements ColorHandler {
         this.middlec2 = hardwareMap.get(ColorSensor.class, "middlec2");
         this.frontc1 = hardwareMap.get(ColorSensor.class, "frontc1");
         this.frontc2 = hardwareMap.get(ColorSensor.class, "frontc2");
+        this.backc1.setGain(gain);
+        this.backc2.setGain(gain);
+        this.middlec1.setGain(gain);
+        this.middlec2.setGain(gain);
+        this.frontc1.setGain(gain);
+        this.frontc2.setGain(gain);
+        
         majorityWindow = new MajorityWindow(CONFIDENCE_WINDOW_MS);
     }
 
@@ -86,6 +97,12 @@ public class DualColorHandler implements ColorHandler {
         NormalizedRGBA rgba = ((NormalizedColorSensor) sensor).getNormalizedColors();
         float[] hsvvalues =  new float[3];
         Color.colorToHSV(rgba.toColor(),hsvvalues);
+        if(hsvvalues[2] < 0.1){ //if value is very low, it's probably just a dark reading rather than a purple or green ball
+            return BallColor.UNKNOWN;
+        }
+        if(hsvvalues[1] < satThreshold){ //if saturation is very low, it's probably just a white reading rather than a purple or green ball
+            return BallColor.UNKNOWN;
+        }
         double[] distances = {
                 circularDistance(hsvvalues[0], PGN[0]),
                 circularDistance(hsvvalues[0], PGN[1]),
@@ -106,11 +123,26 @@ public class DualColorHandler implements ColorHandler {
                 return BallColor.UNKNOWN;
         }
     }
+    public float[][] getRawHSV(){
+        NormalizedRGBA back1 = ((NormalizedColorSensor) backc1).getNormalizedColors();
+        NormalizedRGBA back2 = ((NormalizedColorSensor) backc2).getNormalizedColors();
+        NormalizedRGBA middle1 = ((NormalizedColorSensor) middlec1).getNormalizedColors();
+        NormalizedRGBA middle2 = ((NormalizedColorSensor) middlec2).getNormalizedColors();
+        NormalizedRGBA front1 = ((NormalizedColorSensor) frontc1).getNormalizedColors();
+        NormalizedRGBA front2 = ((NormalizedColorSensor) frontc2).getNormalizedColors();
+        float[][] hsvvalues = new float[6][3];
+        Color.colorToHSV(back1.toColor(),hsvvalues[0]);
+        Color.colorToHSV(back2.toColor(),hsvvalues[1]);
+        Color.colorToHSV(middle1.toColor(),hsvvalues[2]);
+        Color.colorToHSV(middle2.toColor(),hsvvalues[3]);
+        Color.colorToHSV(front1.toColor(),hsvvalues[4]);
+        Color.colorToHSV(front2.toColor(),hsvvalues[5]);
+        return hsvvalues;
+    }
     private double circularDistance(double a, double b){
         double diff = abs(a-b);
         return min(diff,360-diff);
     }
-    final private int[] PGN = {260,168,34};
 
 
     private static class MajorityWindow {
@@ -149,6 +181,7 @@ public class DualColorHandler implements ColorHandler {
         private BallColor resolveMajority(Position position) {
             int greenCount = 0;
             int purpleCount = 0;
+            int unknownCount = 0;
 
             for (StampedBallOrder sample : samples) {
                 BallColor color;
@@ -171,17 +204,43 @@ public class DualColorHandler implements ColorHandler {
                     greenCount++;
                 } else if (color == BallColor.PURPLE) {
                     purpleCount++;
+                } else if (color == BallColor.UNKNOWN) {
+                    unknownCount++;
                 }
             }
 
-            if (greenCount > purpleCount) {
+            if (greenCount > purpleCount && greenCount > unknownCount) {
                 return BallColor.GREEN;
             }
 
-            if (purpleCount > greenCount) {
+            if (purpleCount > greenCount && purpleCount > unknownCount) {
                 return BallColor.PURPLE;
             }
-
+            if(unknownCount > greenCount && unknownCount > purpleCount){
+                return BallColor.UNKNOWN;
+            }
+            // In case of a tie, prefer the most recent sample's color if it's not UNKNOWN
+            if (!samples.isEmpty()) {
+                BallColor mostRecentColor;
+                switch (position) {
+                    case FRONT:
+                        mostRecentColor = samples.peekLast().order.front;
+                        break;
+                    case MIDDLE:
+                        mostRecentColor = samples.peekLast().order.middle;
+                        break;
+                    case BACK:
+                        mostRecentColor = samples.peekLast().order.back;
+                        break;
+                    default:
+                        mostRecentColor = BallColor.UNKNOWN;
+                        break;
+                }
+                if (mostRecentColor != BallColor.UNKNOWN) {
+                    return mostRecentColor;
+                }
+            }
+            // If there's a tie and the most recent color is UNKNOWN, default to UNKNOWN
             return BallColor.UNKNOWN;
         }
     }

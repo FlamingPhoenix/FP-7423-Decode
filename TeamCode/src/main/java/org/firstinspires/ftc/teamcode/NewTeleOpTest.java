@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 import org.firstinspires.ftc.teamcode.utility.BallColor;
 import org.firstinspires.ftc.teamcode.utility.BallOrder;
+import org.firstinspires.ftc.teamcode.utility.ColorHandler;
 import org.firstinspires.ftc.teamcode.utility.PersistentStorage;
 
 @TeleOp
@@ -70,6 +71,7 @@ public class NewTeleOpTest extends OpMode{
     ElapsedTime gametimer = new ElapsedTime();
     boolean isEndGame = false;
     boolean shooterAutoActive = false; // Track if shooter should be auto-powered
+    ColorHandler ch;
 
 
 
@@ -104,6 +106,7 @@ public class NewTeleOpTest extends OpMode{
         middlec = hardwareMap.get(ColorSensor.class, "middlec1");
         backc = hardwareMap.get(ColorSensor.class, "backc1");
         frontc = hardwareMap.get(ColorSensor.class, "frontc1");
+        ch = new DualColorHandler(hardwareMap);
         front = hardwareMap.servo.get("front");
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
@@ -181,11 +184,9 @@ public class NewTeleOpTest extends OpMode{
             lastRight = false;
         }
         if(gamepad2.x){
-            shooterCalculator.setVelocityCompensation(280);
+            shooterCalculator.setVelocityCompensation(290);
             PersistentStorage.saveDouble(hardwareMap.appContext,"b", shooterCalculator.getVelocityCompensation());
-        }
-        if(gamepad2.y){
-            shooterCalculator.setVelocityMultiplier(2.14);
+            shooterCalculator.setVelocityMultiplier(2.19);
             PersistentStorage.saveDouble(hardwareMap.appContext,"m", shooterCalculator.getVelocityMultiplier());
         }
         telemetry.addData("heading",drive.getHeading());
@@ -217,6 +218,7 @@ public class NewTeleOpTest extends OpMode{
             tx=0;
 
         }
+        //BallOrder currentBallOrder = ch.detectBallOrder();
         /*
         // Color detection logic
         BallColor middleColor = detectBallColor(middlec);
