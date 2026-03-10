@@ -36,7 +36,10 @@ public class SingleColorHandler implements ColorHandler {
 
         return new BallOrder(backColor, middleColor, frontColor);
     }
-
+    @Override
+    public float[][] getHSVValues() {
+        return new float[6][3];//temporary placeholder, not used in this handler
+    }
     private BallColor detectBallColor(ColorSensor sensor) {
         int red = sensor.red();
         int green = sensor.green();

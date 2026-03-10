@@ -8,6 +8,8 @@ import org.firstinspires.ftc.teamcode.utility.ColorHandler;
 import org.firstinspires.ftc.teamcode.utility.DualColorHandler;
 import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 
+import java.util.Arrays;
+
 @TeleOp
 public class ColorsTest extends OpMode {
     ColorHandler cols;
@@ -30,12 +32,13 @@ public class ColorsTest extends OpMode {
         telemetry.addData("middle",ballOrder.middle);
         telemetry.addData("front",ballOrder.front);
         //print raw
-        telemetry.addData("back1",hsvvalues[0]);
-        telemetry.addData("back2",hsvvalues[1]);
-        telemetry.addData("middle1",hsvvalues[2]);
-        telemetry.addData("middle2",hsvvalues[3]);
-        telemetry.addData("front1",hsvvalues[4]);
-        telemetry.addData("front2",hsvvalues[5]);
+        telemetry.addData("back1", Arrays.toString(hsvvalues[0]));
+        telemetry.addData("back2", Arrays.toString(hsvvalues[1]));
+        telemetry.addData("middle1", Arrays.toString(hsvvalues[2]));
+        telemetry.addData("middle2", Arrays.toString(hsvvalues[3]));
+        telemetry.addData("front1", Arrays.toString(hsvvalues[4]));
+        telemetry.addData("front2", Arrays.toString(hsvvalues[5]));
+
         telemetry.update();
     }
 }
