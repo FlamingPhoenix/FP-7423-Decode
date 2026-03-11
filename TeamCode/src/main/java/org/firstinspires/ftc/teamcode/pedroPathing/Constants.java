@@ -56,4 +56,7 @@ public class Constants {
                 .mecanumDrivetrain(driveConstants)
                 .build();
     }
+    public static void setBrakeMode(boolean brakemode){
+        driveConstants.setUseBrakeModeInTeleOp(true);
+    }
 }

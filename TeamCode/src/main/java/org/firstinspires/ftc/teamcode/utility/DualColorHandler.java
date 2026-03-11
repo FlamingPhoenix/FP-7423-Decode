@@ -17,10 +17,12 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 @Configurable
 public class DualColorHandler implements ColorHandler {
-    public static double satThreshold = 0.2;
+    public static double satThreshold = 0.4;
     public static float gain = 1.0f;
     public static double valueThreshold = 0.0;
     private static final long CONFIDENCE_WINDOW_MS = 200;
+    public static int purplehue = 200;
+    public static int greenhue = 148;
 
     private final NormalizedColorSensor backc1;
     private final NormalizedColorSensor backc2;
@@ -30,7 +32,7 @@ public class DualColorHandler implements ColorHandler {
     private final NormalizedColorSensor frontc2;
     private final MajorityWindow majorityWindow;
 
-    final private int[] PGN = {260,168,34}; //hue values for purple, green, and orange (furthest hue from either)
+    final private int[] PGN = {purplehue,greenhue,34}; //hue values for purple, green, and orange (furthest hue from either)
 
     public DualColorHandler(HardwareMap hardwareMap) {
         this.backc1 = hardwareMap.get(NormalizedColorSensor.class, "backc1");

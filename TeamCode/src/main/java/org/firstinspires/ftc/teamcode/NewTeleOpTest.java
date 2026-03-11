@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
+import org.firstinspires.ftc.teamcode.utility.ConfidenceFilter;
 import org.firstinspires.ftc.teamcode.utility.DualColorHandler;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.LEDHandler;
@@ -37,7 +38,7 @@ public class NewTeleOpTest extends OpMode{
     public static double KI = 0;
     public static double KD = 0.2;
     public static double KF = 15;
-    public static double alignkp = -0.06;
+    public static double alignkp = -0.03;
     public static double strafeMultiplier = 0.7; // multiplier for diagonal strafe during auto-align
     public static double targetOffset = 0.0; // degrees offset for goal center alignment
     public static double ball1mult = 1;
@@ -75,6 +76,7 @@ public class NewTeleOpTest extends OpMode{
     boolean shooterAutoActive = false; // Track if shooter should be auto-powered
     ColorHandler ch;
     Debounce debouncer = new Debounce(300); // 300 ms debounce for button presses
+    ConfidenceFilter cf = new ConfidenceFilter(100,0.6); // Filter for ball color detection, 100 ms window, 60% confidence threshold
 
 
 
@@ -225,16 +227,15 @@ public class NewTeleOpTest extends OpMode{
         BallOrder currentBallOrder = ch.detectBallOrder();
 
         // Check if all three sensors detect balls (any color)
-        boolean allThreeBallsDetected = (currentBallOrder.middle == BallColor.GREEN || currentBallOrder.middle == BallColor.PURPLE) &&
-                (currentBallOrder.back == BallColor.GREEN || currentBallOrder.back == BallColor.PURPLE) &&
-                (currentBallOrder.front == BallColor.GREEN || currentBallOrder.front == BallColor.PURPLE);
+        boolean allThreeBallsDetected = currentBallOrder.isFull();
+
 
         // Update LEDs with detected ball colors
         ledHandler.ballColors(currentBallOrder);
         ledHandler.setColorsFromStatic();
 
         // Auto-lock gate when all three balls are detected (but don't auto-power shooter)
-        if (allThreeBallsDetected) {
+        if (cf.update(allThreeBallsDetected)) {
             gateClosed = true; // Auto-lock the gate only
         }
 
@@ -287,6 +288,9 @@ public class NewTeleOpTest extends OpMode{
             }
         }
 
+        if(debouncer.update("gamepad1.left_strick_button", gamepad1.left_stick_button)){
+            gateClosed = !gateClosed;
+        }
         // Intake controls
         if(gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
             intake.setPower(gamepad1.left_trigger);
@@ -294,6 +298,7 @@ public class NewTeleOpTest extends OpMode{
             //intake
             intake.setPower(-1);
             linkage.setPosition(POSCONFIG.MIDDLE);
+            gateClosed = false;
 
         } else {
             intake.setPower(0);
@@ -307,9 +312,6 @@ public class NewTeleOpTest extends OpMode{
             gateOpen = false;
             gate.setPosition(0.62);
         }*/
-        if(gamepad1.left_stick_button){
-            gateClosed = !gateClosed;
-        }
         if(!gateClosed){
             gate.setPosition(0.69);
         }

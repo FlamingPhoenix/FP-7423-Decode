@@ -9,7 +9,9 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathConstraints;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -63,7 +65,7 @@ public class redCloseAuto extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
-
+        Constants.driveConstants.setUseBrakeModeInTeleOp(true);
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(121.872, 122.018, Math.toRadians(45)));
 
@@ -99,6 +101,7 @@ public class redCloseAuto extends OpMode {
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.debug("Limelight", limeLightWorking ? "Active" : "Inactive");
         panelsTelemetry.update(telemetry);
+
     }
 
     @Override
@@ -123,7 +126,7 @@ public class redCloseAuto extends OpMode {
     public void start() {
         // Initialize all motors to safe states
         intake.setPower(0);  // Stop intake initially
-        shooter.setVelocity(-1100); // Start shooter with -1100 speed for first ball
+        shooter.setVelocity(firstBallSpeed); // Start shooter with -1100 speed for first ball
 
         // Initialize servo positions to safe states
         linkage.setPosition(0.66); // Move linkage to first ball (front) position immediately
@@ -191,31 +194,37 @@ public class redCloseAuto extends OpMode {
 
             Path5 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(91.700, 82.500),
+                                    new Pose(88.854, 86.565),
                                     new Pose(108.242, 51.563),
                                     new Pose(127.394, 60.257)
                             )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+                    ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+
                     .build();
 
             Path6 = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(127.394, 60.257),
                                     new Pose(124.072, 58.035),
-                                    new Pose(133.251, 55.172)
+                                    new Pose(132.251, 55.172)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(70))
+                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(60))
+                    .setTimeoutConstraint(100)
+                    .setTValueConstraint(0.8)
 
                     .build();
+
             Path7 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(133.251, 55.172),
-                                    new Pose(130.999, 50.117),
-                                    new Pose(135.753, 60.062),
-                                    new Pose(133.251, 55.226)
+                                    new Pose(132.251, 55.172),
+                                    new Pose(129.236, 43.577),
+                                    new Pose(132.376, 63.341),
+                                    new Pose(132.251, 55.226)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(70), Math.toRadians(60))
+                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(50))
+                    .setTimeoutConstraint(100)
+                    .setTranslationalConstraint(1.5)
+                    .setTValueConstraint(0.8)
 
                     .build();
             Path8 = follower.pathBuilder().addPath(
@@ -284,7 +293,7 @@ public class redCloseAuto extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                if (!follower.isBusy()) {
+                if (follower.getCurrentTValue()>0.8) {
                     startShooting();
                     setPathState(2);
                 }
@@ -307,7 +316,7 @@ public class redCloseAuto extends OpMode {
                 break;
             case 5:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path3, 0.7, true);
+                    follower.followPath(paths.Path3, 0.6, true);
                     setPathState(6);
                 }
                 break;
@@ -325,7 +334,7 @@ public class redCloseAuto extends OpMode {
                 break;
             case 8:
                 follower.followPath(paths.Path4);
-                shooter.setVelocity(-1600);
+                shooter.setVelocity(-1700);
                 setPathState(9);
                 break;
             case 9:
@@ -363,7 +372,7 @@ public class redCloseAuto extends OpMode {
             case 14:
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>1) {
-                        follower.followPath(paths.Path7, 0.7, true);
+                        follower.followPath(paths.Path7, 0.4, true);
                         setPathState(15);
                     }
                 }
@@ -409,7 +418,7 @@ public class redCloseAuto extends OpMode {
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>1) {
                         gate.setPosition(0.4628); // Close gate after second intake
-                        follower.followPath(paths.Path7, 0.7, true);
+                        follower.followPath(paths.Path7, 0.4, true);
                         setPathState(21);
                     }
                 }
@@ -444,7 +453,7 @@ public class redCloseAuto extends OpMode {
                 break;
             case 25:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path9, 0.7, true);
+                    follower.followPath(paths.Path9, 0.4, true);
                     setPathState(26);
                 }
                 break;

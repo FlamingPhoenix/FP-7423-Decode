@@ -24,7 +24,7 @@ public class ColorsTest extends OpMode {
     @Override
     public void loop(){
         BallOrder ballOrder = cols.detectRawBallOrder();
-        //hsvvalues = cols.getHSVValues();
+        hsvvalues = cols.getHSVValues();
         ledHandler.ballColors(ballOrder);
         ledHandler.setColorsFromStatic();
         //
