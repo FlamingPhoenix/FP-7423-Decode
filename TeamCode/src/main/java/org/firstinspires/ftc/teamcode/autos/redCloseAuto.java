@@ -20,13 +20,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import java.util.List;
 
-import org.firstinspires.ftc.teamcode.POSCONFIG;
 import org.firstinspires.ftc.teamcode.legacy.POSCONFIG_OLD;
 import org.firstinspires.ftc.teamcode.legacy.pedroPathingLegacy.ConstantsOLD;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.utility.POS;
 
 @Autonomous(name = "Red Auto Close NEW", group = "Autonomous")
 @Configurable // Panels
@@ -47,29 +44,22 @@ public class redCloseAuto extends OpMode {
 
     // Shooting hardware
     DcMotorEx shooter;
-    Servo front, back, middle, linkage, lock;
+    Servo front, back, middle, linkage, gate;
 
     // Intake hardware
     DcMotor intake;
     boolean inShoot = false;
     int shootSequenceState = 0;
     ElapsedTime shootSequenceTimer = new ElapsedTime();
-    double shooterSpeed = -1600;
+    double shooterSpeed = -1620;
     double firstBallSpeed = -1620; // Slower speed for first ball
     int shootingOrder = 0; // 0 = normal (back->middle->front), 1 = reverse (front->middle->back), 2 = middle->back->front
     int storedShootingOrder = 0; // Store AprilTag order for second shooting sequence
     boolean isFirstShoot = true; // Track if this is the first shooting sequence
     boolean keepShooterWarmed = false; // Keep shooter running at -1000 when not shooting
 
-    List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-
     @Override
     public void init() {
-        for (LynxModule hub : allHubs) {
-            //hopefully bulk reads will reduce loop time
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        }
-
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
@@ -94,7 +84,7 @@ public class redCloseAuto extends OpMode {
         back = hardwareMap.servo.get("back");
         middle = hardwareMap.servo.get("middle");
         linkage = hardwareMap.servo.get("linkage");
-        lock = hardwareMap.servo.get("lock");
+        gate = hardwareMap.servo.get("lock");
 
         // Initialize intake hardware
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -113,12 +103,9 @@ public class redCloseAuto extends OpMode {
 
     @Override
     public void loop() {
-        for (LynxModule hub : allHubs) {
-            hub.clearBulkCache();
-        }
+        follower.update(); // Update Pedro Pathing
         pathState = autonomousPathUpdate(); // Update autonomous state machine
         updateShootingSequence(); // Update shooting sequence
-        follower.update(); // Update Pedro Pathing
 
         // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
@@ -136,13 +123,14 @@ public class redCloseAuto extends OpMode {
     public void start() {
         // Initialize all motors to safe states
         intake.setPower(0);  // Stop intake initially
-        shooter.setVelocity(firstBallSpeed); // Start shooter with speed for first ball
+        shooter.setVelocity(-1100); // Start shooter with -1100 speed for first ball
 
         // Initialize servo positions to safe states
         linkage.setPosition(0.66); // Move linkage to first ball (front) position immediately
         front.setPosition(0);
         back.setPosition(0.35);
         middle.setPosition(0.04);
+        gate.setPosition(0.69); // Start with gate open
 
         setPathState(0);
     }
@@ -156,6 +144,7 @@ public class redCloseAuto extends OpMode {
         public PathChain Path6; // intake gate
         public PathChain Path7; // wiggle gate
         public PathChain Path8; // go shoot
+        public PathChain Path8_alt; // alternate go shoot path for second cycle
         public PathChain Path9; // intake path
         public PathChain Path10; // shoot path
 
@@ -193,8 +182,8 @@ public class redCloseAuto extends OpMode {
             Path4 = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(131.580, 60.000),
-                                    new Pose(91.670, 59.814),
-                                    new Pose(91.700, 82.500)
+                                    new Pose(84.790, 60.526),
+                                    new Pose(88.854, 86.565)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
 
@@ -203,56 +192,57 @@ public class redCloseAuto extends OpMode {
             Path5 = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(91.700, 82.500),
-                                    new Pose(115.901, 58.566),
+                                    new Pose(108.242, 51.563),
                                     new Pose(127.394, 60.257)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
-
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
                     .build();
 
             Path6 = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(127.394, 60.257),
                                     new Pose(124.072, 58.035),
-                                    new Pose(131.376, 52.764)
+                                    new Pose(133.251, 55.172)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(40))
-                    .setTimeoutConstraint(1000)
-                    .build();
+                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(70))
 
+                    .build();
             Path7 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(131.376, 52.764),
-                                    new Pose(130.084, 39.035),
-                                    new Pose(132.155, 65.712),
-                                    new Pose(131.376, 52.764)
+                                    new Pose(133.251, 55.172),
+                                    new Pose(130.999, 50.117),
+                                    new Pose(135.753, 60.062),
+                                    new Pose(133.251, 55.226)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(48))
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(131.376, 52.764),
-                                    new Pose(130.084, 39.035),
-                                    new Pose(132.155, 65.712),
-                                    new Pose(131.376, 52.764)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(40))
-                    .build();
+                    ).setLinearHeadingInterpolation(Math.toRadians(70), Math.toRadians(60))
 
+                    .build();
             Path8 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(132.376, 53.038),
-                                    new Pose(90.671, 63.579),
-                                    new Pose(91.700, 82.500)
+                                    new Pose(133.251, 55.226),
+                                    new Pose(83.079, 76.390),
+                                    new Pose(91.7, 82.5)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(48))
+                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(48))
+
+                    .build();
+
+            Path8_alt = follower.pathBuilder().addPath(
+                            new BezierCurve(
+                                    new Pose(133.251, 55.226),
+                                    new Pose(90.671, 63.579),
+                                    new Pose(86.448, 78.780)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(48))
 
                     .build();
 
             Path9 = follower.pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(91.700, 82.500),
-                                    new Pose(103.724, 75.560),
+                                    new Pose(86.448, 78.780),
+                                    new Pose(116.198, 76.435),
                                     new Pose(125.000, 84.000)
                             )
                     )
@@ -289,24 +279,22 @@ public class redCloseAuto extends OpMode {
 
     public int autonomousPathUpdate() {
         switch (pathState) {
-            case 0: //goto first shoot
-                lock.setPosition(POSCONFIG.LOCKENGAGED);
+            case 0:
                 follower.followPath(paths.Path1);
                 setPathState(1);
                 break;
-            case 1: //shoot
-                if (follower.getCurrentTValue() > 0.6) {
+            case 1:
+                if (!follower.isBusy()) {
                     startShooting();
                     setPathState(2);
                 }
                 break;
             case 2:
-                if (!inShoot && !follower.isBusy()) {
+                if (!inShoot) {
                     setPathState(3);
                 }
                 break;
-            case 3: // go to spike
-                lock.setPosition(POSCONFIG.LOCKDISENGAGED);
+            case 3:
                 follower.followPath(paths.Path2);
                 setPathState(4);
                 break;
@@ -317,9 +305,9 @@ public class redCloseAuto extends OpMode {
                     setPathState(5);
                 }
                 break;
-            case 5: // intake spike
+            case 5:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path3, 0.4, true);
+                    follower.followPath(paths.Path3, 0.7, true);
                     setPathState(6);
                 }
                 break;
@@ -331,10 +319,11 @@ public class redCloseAuto extends OpMode {
                 break;
             case 7:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
+                    gate.setPosition(0.4628); // Close gate after first intake
                     setPathState(8);
                 }
                 break;
-            case 8: // go to shooting spot
+            case 8:
                 follower.followPath(paths.Path4);
                 shooter.setVelocity(-1600);
                 setPathState(9);
@@ -345,12 +334,11 @@ public class redCloseAuto extends OpMode {
                     setPathState(10);
                 }
                 break;
-            case 10: // shoot
+            case 10:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    lock.setPosition(POSCONFIG.LOCKENGAGED);
                     intake.setPower(0);
                     shooterSpeed = -1800;
-                    firstBallSpeed = -1700;
+                    firstBallSpeed = -1800;
                     startShooting();
                     setPathState(11);
                 }
@@ -360,39 +348,42 @@ public class redCloseAuto extends OpMode {
                     setPathState(12);
                 }
                 break;
-            case 12: // get gate
-                lock.setPosition(POSCONFIG.LOCKDISENGAGED);
+            case 12:
                 follower.followPath(paths.Path5);
                 setPathState(13);
                 break;
-            case 13: // go around
+            case 13:
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds() > 0.2) {
                         follower.followPath(paths.Path6);
-                        intake.setPower(-0.9);
+                        intake.setPower(-1);
                         setPathState(14);
                     }
                 }
-                break;
-            case 14: // wiggle
+            case 14:
                 if(!follower.isBusy()){
-                    pathTimer.resetTimer();
-                    setPathState(15);
+                    if(pathTimer.getElapsedTimeSeconds()>1) {
+                        follower.followPath(paths.Path7, 0.7, true);
+                        setPathState(15);
+                    }
                 }
                 break;
             case 15:
-                if(pathTimer.getElapsedTimeSeconds()>1) {
-                    follower.followPath(paths.Path7);
-                    setPathState(16);
+                if(!follower.isBusy()){
+                    if(pathTimer.getElapsedTimeSeconds()>2) {
+                        gate.setPosition(0.4628); // Close gate after fourth intake cycle
+                        intake.setPower(-0.3);
+                        shooter.setVelocity(shooterSpeed);
+                        follower.followPath(paths.Path8);
+                        setPathState(16);
+                    }
                 }
                 break;
-            case 16: // go to shooting spot
+            case 16:
                 if(!follower.isBusy()){
-                    intake.setPower(-0.3);
-                    shooter.setVelocity(shooterSpeed);
-                    follower.followPath(paths.Path8);
+                    pathTimer.resetTimer();
+                    startShooting();
                     setPathState(17);
-
                 }
                 break;
             case 17:
@@ -409,7 +400,7 @@ public class redCloseAuto extends OpMode {
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds() > 0.2) {
                         follower.followPath(paths.Path6);
-                        intake.setPower(-0.9);
+                        intake.setPower(-1);
                         setPathState(20);
                     }
                 }
@@ -417,7 +408,8 @@ public class redCloseAuto extends OpMode {
             case 20: // wiggle (second cycle)
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>1) {
-                        follower.followPath(paths.Path7, 0.4, true);
+                        gate.setPosition(0.4628); // Close gate after second intake
+                        follower.followPath(paths.Path7, 0.7, true);
                         setPathState(21);
                     }
                 }
@@ -427,7 +419,7 @@ public class redCloseAuto extends OpMode {
                     if(pathTimer.getElapsedTimeSeconds()>2) {
                         intake.setPower(-0.3);
                         shooter.setVelocity(shooterSpeed);
-                        follower.followPath(paths.Path8);
+                        follower.followPath(paths.Path8_alt);
                         setPathState(22);
                     }
                 }
@@ -452,7 +444,7 @@ public class redCloseAuto extends OpMode {
                 break;
             case 25:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path9, 0.4, true);
+                    follower.followPath(paths.Path9, 0.7, true);
                     setPathState(26);
                 }
                 break;
@@ -464,6 +456,7 @@ public class redCloseAuto extends OpMode {
                 break;
             case 27:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
+                    gate.setPosition(0.4628); // Close gate after final intake
                     setPathState(28);
                 }
                 break;
@@ -547,7 +540,7 @@ public class redCloseAuto extends OpMode {
             shootSequenceTimer.reset();
 
             // Turn on intake and wheel during shooting
-            intake.setPower(-0.9);
+
 
             // Always use normal shooting order for all sequences
             shootingOrder = 0; // Normal order: back->middle->front
@@ -602,7 +595,7 @@ public class redCloseAuto extends OpMode {
                 break;
 
             case 2: // Wait then reset front servo and move to middle
-                if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
                     front.setPosition(0); // Reset front servo
                     linkage.setPosition(0.85); // Move shooter to middle position
                     shootSequenceTimer.reset();
@@ -619,7 +612,7 @@ public class redCloseAuto extends OpMode {
                 break;
 
             case 4: // Wait then reset middle servo and move to back
-                if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
+                if (shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
                     middle.setPosition(0.04); // Reset middle servo
                     linkage.setPosition(1.0); // Move shooter to back position
                     shootSequenceTimer.reset();
@@ -628,7 +621,7 @@ public class redCloseAuto extends OpMode {
                 break;
 
             case 5: // Move linkage to back position and lift back ball
-                if (shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
+                if (shootSequenceTimer.milliseconds() > 320) { // Wait for linkage to move
                     back.setPosition(0.78); // Push back ball up
                     shootSequenceTimer.reset();
                     shootSequenceState = 6;
@@ -636,10 +629,11 @@ public class redCloseAuto extends OpMode {
                 break;
 
             case 6: // End sequence
-                if (shootSequenceTimer.milliseconds() > 400) { // Wait for ball to shoot
+                if (shootSequenceTimer.milliseconds() > 500) { // Wait for ball to shoot
                     back.setPosition(0.35); // Reset back servo
                     // Turn off intake and wheel when shooting ends
                     intake.setPower(0);
+                    gate.setPosition(0.69); // Open gate after shooting
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up
@@ -694,7 +688,7 @@ public class redCloseAuto extends OpMode {
                 break;
 
             case 1: // Move linkage to back position and lift back ball
-                if (shootSequenceTimer.milliseconds() > 600) { // Longer wait for linkage to move
+                if (shootSequenceTimer.milliseconds() > 600) { // Longer wait for linkage to mov¸Åe
                     back.setPosition(0.6); // Push back ball up
                     shootSequenceTimer.reset();
                     shootSequenceState = 2;
@@ -706,6 +700,7 @@ public class redCloseAuto extends OpMode {
                     back.setPosition(0); // Reset back servo
                     // Turn off intake and wheel when shooting ends
                     intake.setPower(0);
+                    gate.setPosition(0.69); // Open gate after shooting
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up
@@ -772,6 +767,7 @@ public class redCloseAuto extends OpMode {
                     middle.setPosition(0); // Keep middle servo up
                     // Turn off intake and wheel when shooting ends
                     intake.setPower(0);
+                    gate.setPosition(0.69); // Open gate after shooting
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up
@@ -838,6 +834,7 @@ public class redCloseAuto extends OpMode {
                     middle.setPosition(0); // Keep middle servo up
                     // Turn off intake and wheel when shooting ends
                     intake.setPower(0);
+                    gate.setPosition(0.69); // Open gate after shooting
                     if (isFirstShoot) {
                         isFirstShoot = false; // Mark first shooting as complete
                         keepShooterWarmed = true; // Start keeping shooter warmed up

@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.shooter.AutoAlign;
 import org.firstinspires.ftc.teamcode.shooter.ShootCalculator;
+import org.firstinspires.ftc.teamcode.utility.DualColorHandler;
 import org.firstinspires.ftc.teamcode.utility.FieldCentricDrivePinPoint;
 import org.firstinspires.ftc.teamcode.utility.LEDHandler;
 import org.firstinspires.ftc.teamcode.utility.BallColor;
@@ -220,40 +221,28 @@ public class NewTeleOpTest extends OpMode{
             tx=0;
 
         }
-        //BallOrder currentBallOrder = ch.detectBallOrder();
-        /*
-        // Color detection logic
-        BallColor middleColor = detectBallColor(middlec);
-        BallColor backColor = detectBallColor(backc);
-        BallColor frontColor = detectBallColor(frontc);
+        // Use DualColorHandler for better color detection with dual sensors
+        BallOrder currentBallOrder = ch.detectBallOrder();
 
         // Check if all three sensors detect balls (any color)
-        boolean allThreeBallsDetected = (middleColor == BallColor.GREEN || middleColor == BallColor.PURPLE) &&
-                (backColor == BallColor.GREEN || backColor == BallColor.PURPLE) &&
-                (frontColor == BallColor.GREEN || frontColor == BallColor.PURPLE);
+        boolean allThreeBallsDetected = (currentBallOrder.middle == BallColor.GREEN || currentBallOrder.middle == BallColor.PURPLE) &&
+                (currentBallOrder.back == BallColor.GREEN || currentBallOrder.back == BallColor.PURPLE) &&
+                (currentBallOrder.front == BallColor.GREEN || currentBallOrder.front == BallColor.PURPLE);
 
-        // Check if no balls are detected
-        boolean noBallsDetected = (middleColor == BallColor.UNKNOWN) &&
-                (backColor == BallColor.UNKNOWN) &&
-                (frontColor == BallColor.UNKNOWN);
-
-        // Create BallOrder from sensor readings and update LEDs
-        BallOrder currentBallOrder = new BallOrder(frontColor, middleColor, backColor);
+        // Update LEDs with detected ball colors
         ledHandler.ballColors(currentBallOrder);
         ledHandler.setColorsFromStatic();
 
+        // Auto-lock gate when all three balls are detected (but don't auto-power shooter)
         if (allThreeBallsDetected) {
-            shooterAutoActive = true;
-        } else if (noBallsDetected) {
-            shooterAutoActive = false;
+            gateClosed = true; // Auto-lock the gate only
         }
 
         telemetry.addData("Shooter Velocity (RPM)", shooterSpeed);
-        telemetry.addData("Middle Sensor", middleColor);
-        telemetry.addData("Back Sensor", backColor);
-        telemetry.addData("Front Sensor", frontColor);
+        telemetry.addData("Middle Sensor", currentBallOrder.middle);
+        telemetry.addData("Back Sensor", currentBallOrder.back);
+        telemetry.addData("Front Sensor", currentBallOrder.front);
         telemetry.addData("All Three Balls Detected", allThreeBallsDetected);
-        */
         // Add telemetry for debugging drive issues
         telemetry.addData("IMU Heading (deg)", Math.toDegrees(drive.getHeading()));
 //        telemetry.addData("Left Stick X", gamepad1.left_stick_x);
