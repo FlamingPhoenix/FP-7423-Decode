@@ -39,13 +39,13 @@ public class NewTeleOpTest extends OpMode{
     public static double KD = 0.2;
     public static double KF = 15;
     public static double alignkp = -0.03;
+    public static double alignkd = 0.001;
     public static double strafeMultiplier = 0.7; // multiplier for diagonal strafe during auto-align
-    public static double targetOffset = 0.0; // degrees offset for goal center alignment
+    public static double targetOffset = 3; // degrees offset for goal center alignment
     public static double ball1mult = 1;
     public static double ball2mult = 1;
     public static double ball3mult = 1;
     LEDHandler ledHandler;
-
     //THE REST
     RevBlinkinLedDriver blinkin;
     ColorSensor middlec, backc, frontc;
@@ -126,7 +126,7 @@ public class NewTeleOpTest extends OpMode{
         catch (IllegalArgumentException e){//change to llworking = false on default and set to true when llworking
             limeLightWorking = false;
         }
-        autoAligner = new AutoAlign(drive,alignkp,strafeMultiplier);
+        autoAligner = new AutoAlign(drive,alignkp,strafeMultiplier,alignkd);
         autoAligner.setTargetOffset(targetOffset);
         shooterCalculator = new ShootCalculator(0,10,72);
 
