@@ -147,7 +147,6 @@ public class redCloseAuto extends OpMode {
         public PathChain Path6; // intake gate
         public PathChain Path7; // wiggle gate
         public PathChain Path8; // go shoot
-        public PathChain Path8_alt; // alternate go shoot path for second cycle
         public PathChain Path9; // intake path
         public PathChain Path10; // shoot path
 
@@ -202,71 +201,60 @@ public class redCloseAuto extends OpMode {
 
                     .build();
 
-            Path6 = follower.pathBuilder().addPath(
-                            new BezierCurve(
-                                    new Pose(127.394, 60.257),
-                                    new Pose(124.072, 58.035),
-                                    new Pose(132.251, 55.172)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(60))
-                    .setTimeoutConstraint(100)
-                    .setTValueConstraint(0.8)
+            Path6 = follower.pathBuilder()
+          .addPath(
+            new BezierCurve(
+              new Pose(127.394, 60.257),
+            new Pose(124.072, 58.035),
+            new Pose(131.719, 53.859)
+            )
+          )
+          .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(60))
+          .build();
 
-                    .build();
-
-            Path7 = follower.pathBuilder().addPath(
-                            new BezierCurve(
-                                    new Pose(132.251, 55.172),
-                                    new Pose(129.236, 43.577),
-                                    new Pose(132.376, 63.341),
-                                    new Pose(132.251, 55.226)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(50))
-                    .setTimeoutConstraint(100)
-                    .setTranslationalConstraint(1.5)
-                    .setTValueConstraint(0.8)
-
-                    .build();
-            Path8 = follower.pathBuilder().addPath(
-                            new BezierCurve(
-                                    new Pose(133.251, 55.226),
-                                    new Pose(83.079, 76.390),
-                                    new Pose(91.7, 82.5)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(48))
-
-                    .build();
-
-            Path8_alt = follower.pathBuilder().addPath(
-                            new BezierCurve(
-                                    new Pose(133.251, 55.226),
-                                    new Pose(90.671, 63.579),
-                                    new Pose(86.448, 78.780)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(48))
-
-                    .build();
-
-            Path9 = follower.pathBuilder()
+            Path7 = follower.pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(86.448, 78.780),
-                                    new Pose(116.198, 76.435),
-                                    new Pose(125.000, 84.000)
+                                    new Pose(131.719, 53.859),
+                                    new Pose(127.906, 48.269),
+                                    new Pose(136.122, 59.488),
+                                    new Pose(131.719, 53.913)
                             )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
-                    .build();
 
-            Path10 = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(125.000, 84.000),
-                                    new Pose(96.970, 96.389)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
-                    .build();
+          )
+          .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(40))
+          .build();
+            Path8 = follower.pathBuilder()
+          .addPath(
+            new BezierCurve(
+              new Pose(131.719, 53.913),
+            new Pose(90.671, 63.579),
+            new Pose(84.916, 79.217)
+            )
+          )
+          .setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(48))
+          .build();
+
+      Path9 = follower.pathBuilder()
+          .addPath(
+            new BezierCurve(
+              new Pose(84.916, 79.217),
+            new Pose(81.183, 86.065),
+            new Pose(125.875, 82.249)
+            )
+          )
+          .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+          .build();
+
+      Path10 = follower.pathBuilder()
+          .addPath(
+            new BezierLine(
+              new Pose(125.875, 82.249),
+            new Pose(88.435, 108.426)
+            )
+          )
+          .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(34))
+          .build();
 
 //            Path5.setHeadingInterpolator(
 //                    HeadingInterpolator.piecewise(
@@ -417,7 +405,6 @@ public class redCloseAuto extends OpMode {
             case 20: // wiggle (second cycle)
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>1) {
-                        gate.setPosition(0.4628); // Close gate after second intake
                         follower.followPath(paths.Path7, 0.4, true);
                         setPathState(21);
                     }
@@ -426,9 +413,10 @@ public class redCloseAuto extends OpMode {
             case 21: // go to shooting spot (second cycle)
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>2) {
+                        gate.setPosition(0.4628); // Close gate after second intake
                         intake.setPower(-0.3);
                         shooter.setVelocity(shooterSpeed);
-                        follower.followPath(paths.Path8_alt);
+                        follower.followPath(paths.Path8);
                         setPathState(22);
                     }
                 }
@@ -453,7 +441,7 @@ public class redCloseAuto extends OpMode {
                 break;
             case 25:
                 if (pathTimer.getElapsedTimeSeconds() > 0.1) {
-                    follower.followPath(paths.Path9, 0.4, true);
+                    follower.followPath(paths.Path9, 0.8, true);
                     setPathState(26);
                 }
                 break;
