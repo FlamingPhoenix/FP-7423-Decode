@@ -67,7 +67,7 @@ public class NewTeleOpTest extends OpMode{
     //LimeLightLocator locator;
     ShootCalculator shooterCalculator;
     double ta, tx, ty,distanceToTarget;
-    double shooterSpeed = -1050; //default shooter velocity in ticks per second
+    double shooterSpeed = -2000; //default shooter velocity in ticks per second
     boolean limeLightWorking = true;
     double positionCompensation;
     double multiplierCompensation = 1.0;
@@ -323,7 +323,7 @@ public class NewTeleOpTest extends OpMode{
                 case 1: // Move linkage to back position and lift back ball
                     linkage.setPosition(POSCONFIG.FRONT);  // Move shooter to back position
                     shooter.setVelocity(shooterSpeed);
-                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
+                    if(shootSequenceTimer.milliseconds() > 250) { // Wait for linkage to move
                         front.setPosition(0.4); // Push back ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 2;
@@ -331,7 +331,7 @@ public class NewTeleOpTest extends OpMode{
                     break;
 
                 case 2: // Wait then reset back servo and move to middle
-                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
+                    if(shootSequenceTimer.milliseconds() > 250) { // Wait for ball to shoot
                         front.setPosition(0 ); // Reset back servo
                         if(shootMode == 1) { // Back ball only
                             shooter.setPower(0);
@@ -350,7 +350,7 @@ public class NewTeleOpTest extends OpMode{
                         linkage.setPosition(POSCONFIG.MIDDLE); // Move shooter to middle position
                         shooter.setVelocity(shooterSpeed);
                     }
-                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
+                    if(shootSequenceTimer.milliseconds() > 250) { // Wait for linkage to move
                         middle.setPosition(0.4); // Push middle ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 4;
@@ -358,7 +358,7 @@ public class NewTeleOpTest extends OpMode{
                     break;
 
                 case 4: // Wait then reset middle servo and move to front
-                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
+                    if(shootSequenceTimer.milliseconds() > 250) { // Wait for ball to shoot
                         middle.setPosition(0.04); // Reset middle servo
                         if(shootMode == 2) { // Middle ball only
                             shooter.setPower(0);
@@ -377,7 +377,7 @@ public class NewTeleOpTest extends OpMode{
                         linkage.setPosition(POSCONFIG.BACK); // Move shooter to front position
                         shooter.setVelocity(shooterSpeed);
                     }
-                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for linkage to move
+                    if(shootSequenceTimer.milliseconds() > 250) { // Wait for linkage to move
                         back.setPosition(0.78); // Push front ball up
                         shootSequenceTimer.reset();
                         shootSequenceState = 6;
@@ -385,7 +385,7 @@ public class NewTeleOpTest extends OpMode{
                     break;
 
                 case 6: // End sequence
-                    if(shootSequenceTimer.milliseconds() > 300) { // Wait for ball to shoot
+                    if(shootSequenceTimer.milliseconds() > 250) { // Wait for ball to shoot
                         back.setPosition(0.35); // Reset front servo
                         shooter.setPower(0);
                         inShoot = false;
