@@ -65,6 +65,7 @@ public class redCloseAuto extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
+        Constants.driveConstants.setUseBrakeModeInTeleOp(true);
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(121.872, 122.018, Math.toRadians(45)));
 
@@ -201,64 +202,59 @@ public class redCloseAuto extends OpMode {
                     .build();
 
             Path6 = follower.pathBuilder()
-          .addPath(
-            new BezierCurve(
-              new Pose(127.394, 60.257),
-            new Pose(124.072, 58.035),
-            new Pose(131.719, 53.859)
-            )
-          )
-          .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(60))
-          .build();
-
-            Path7 = follower.pathBuilder().addPath(
-                            new BezierLine(
-                                    new Pose(131.719, 53.859),
-
-                                    new Pose(124.660, 49.033)
-                            )
-                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(60))
                     .addPath(
                             new BezierCurve(
-                                    new Pose(124.660, 49.033),
-                                    new Pose(132.574, 47.365),
+                                    new Pose(127.394, 60.257),
+                                    new Pose(124.072, 58.035),
+                                    new Pose(131.719, 53.859)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(60))
+                    .build();
+
+            Path7 = follower.pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(131.719, 53.859),
+                                    new Pose(127.906, 48.269),
+                                    new Pose(136.122, 59.488),
                                     new Pose(131.719, 53.913)
                             )
-                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(40))
-          .build();
 
-
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(40))
+                    .build();
             Path8 = follower.pathBuilder()
-          .addPath(
-            new BezierCurve(
-              new Pose(131.719, 53.913),
-            new Pose(90.671, 63.579),
-            new Pose(84.916, 79.217)
-            )
-          )
-          .setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(48))
-          .build();
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(131.719, 53.913),
+                                    new Pose(90.671, 63.579),
+                                    new Pose(84.916, 79.217)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(48))
+                    .build();
 
-      Path9 = follower.pathBuilder()
-          .addPath(
-            new BezierCurve(
-              new Pose(84.916, 79.217),
-            new Pose(81.183, 86.065),
-            new Pose(125.875, 82.249)
-            )
-          )
-          .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
-          .build();
+            Path9 = follower.pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(84.916, 79.217),
+                                    new Pose(81.183, 86.065),
+                                    new Pose(125.875, 82.249)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(0))
+                    .build();
 
-      Path10 = follower.pathBuilder()
-          .addPath(
-            new BezierLine(
-              new Pose(125.875, 82.249),
-            new Pose(88.435, 108.426)
-            )
-          )
-          .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(34))
-          .build();
+            Path10 = follower.pathBuilder()
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(125.875, 82.249),
+                                    new Pose(88.435, 108.426)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(34))
+                    .build();
 
 //            Path5.setHeadingInterpolator(
 //                    HeadingInterpolator.piecewise(
@@ -291,7 +287,7 @@ public class redCloseAuto extends OpMode {
                 }
                 break;
             case 2:
-                if (!inShoot && !follower.isBusy()) {
+                if (!inShoot) {
                     setPathState(3);
                 }
                 break;
@@ -364,7 +360,7 @@ public class redCloseAuto extends OpMode {
             case 14:
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>1) {
-                        follower.followPath(paths.Path7, 0.8, true);
+                        follower.followPath(paths.Path7, 0.4, true);
                         setPathState(15);
                     }
                 }
