@@ -65,7 +65,6 @@ public class redCloseAuto extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         pathTimer = new Timer();
         shootSequenceTimer = new ElapsedTime();
-        Constants.driveConstants.setUseBrakeModeInTeleOp(true);
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(121.872, 122.018, Math.toRadians(45)));
 
@@ -212,18 +211,23 @@ public class redCloseAuto extends OpMode {
           .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(60))
           .build();
 
-            Path7 = follower.pathBuilder()
+            Path7 = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    new Pose(131.719, 53.859),
+
+                                    new Pose(124.660, 49.033)
+                            )
+                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(60))
                     .addPath(
                             new BezierCurve(
-                                    new Pose(131.719, 53.859),
-                                    new Pose(127.906, 48.269),
-                                    new Pose(136.122, 59.488),
+                                    new Pose(124.660, 49.033),
+                                    new Pose(132.574, 47.365),
                                     new Pose(131.719, 53.913)
                             )
-
-          )
-          .setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(40))
+                    ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(40))
           .build();
+
+
             Path8 = follower.pathBuilder()
           .addPath(
             new BezierCurve(
@@ -287,7 +291,7 @@ public class redCloseAuto extends OpMode {
                 }
                 break;
             case 2:
-                if (!inShoot) {
+                if (!inShoot && !follower.isBusy()) {
                     setPathState(3);
                 }
                 break;
@@ -360,7 +364,7 @@ public class redCloseAuto extends OpMode {
             case 14:
                 if(!follower.isBusy()){
                     if(pathTimer.getElapsedTimeSeconds()>1) {
-                        follower.followPath(paths.Path7, 0.4, true);
+                        follower.followPath(paths.Path7, 0.8, true);
                         setPathState(15);
                     }
                 }

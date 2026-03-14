@@ -219,7 +219,7 @@ public class NewTeleOpTest extends OpMode{
 
         } else{
             autoAlignActive = false;
-            shooterSpeed =-1050;
+            shooterSpeed =-2000;
             tx=0;
 
         }
